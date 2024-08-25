@@ -1,0 +1,50 @@
+export EDITOR=nvim
+
+# Color support for less
+export LESS_TERMCAP_mb=$'\E[01;31m'       # begin blinking
+export LESS_TERMCAP_md=$'\E[01;38;5;74m'  # begin bold
+export LESS_TERMCAP_me=$'\E[0m'           # end mode
+export LESS_TERMCAP_se=$'\E[0m'           # end standout-mode
+export LESS_TERMCAP_so=$'\E[38;5;246m'    # begin standout-mode - info box
+export LESS_TERMCAP_ue=$'\E[0m'           # end underline
+export LESS_TERMCAP_us=$'\E[04;38;5;146m' # begin underline
+
+#Customization
+# vim Vianney
+export PATH="/run/current-system/sw/bin/clangd:$PATH"
+export PATH="/home/dup/Clone/RE-flex/bin:$PATH"
+
+
+alias ls='ls --color=auto'
+alias gs='git status --porcelain'
+alias grep='grep --color -n'
+alias la='ls -a'
+alias makeshortcut="ln -s"
+alias here="pwd | xsel -b"
+alias copy="xsel -b"
+
+alias vim='nvim'
+
+EPITA_FOLDER=~/Documents/School/ING-EPITA/ING1
+alias epita="cd $EPITA_FOLDER"
+alias s6="cd $EPITA_FOLDER/S6"
+alias kern="cd $EPITA_FOLDER/S6/PROJET-K"
+alias PING="cd $EPITA_FOLDER/S6/PING"
+
+alias clang-format-epita='find . -iname "*.hh" -o -iname "*.cc" | xargs clang-format -i'
+alias autoTag='~/Scripts/autoTag.sh'
+
+alias folderSize='du -hd 1'
+alias gdb='gdb -tui'
+alias make='make -s'
+alias resource='source ~/.zshrc'
+alias brc='gedit ~/.aliases'
+
+function delayTag()
+{
+    sleep $(( $1  * 60 ));
+    echo | ~/afs/.confs/autoTag.sh $2 > /dev/null 2>&1;
+    exit 0;
+}
+
+export STOW_DIR=~/Clone/dotfiles

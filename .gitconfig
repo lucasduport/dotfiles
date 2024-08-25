@@ -1,0 +1,5 @@
+[user]
+	email = lucas.duport@epita.fr
+	name = Lucas Duport
+[init]
+	defaultBranch = master
