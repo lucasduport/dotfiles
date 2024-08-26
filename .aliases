@@ -24,6 +24,7 @@ alias here="pwd | xsel -b"
 alias copy="xsel -b"
 
 alias vim='nvim'
+alias cat='bat'
 
 EPITA_FOLDER=~/Documents/School/ING-EPITA/ING1
 alias epita="cd $EPITA_FOLDER"
@@ -46,5 +47,3 @@ function delayTag()
     echo | ~/afs/.confs/autoTag.sh $2 > /dev/null 2>&1;
     exit 0;
 }
-
-export STOW_DIR=~/Clone/dotfiles
