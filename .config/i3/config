@@ -8,6 +8,7 @@
 #
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
 
+set $alt Mod1
 set $mod Mod4
 
 # Font for window titles. Will also be used by the bar unless a different font
@@ -217,3 +218,10 @@ for_window [class=".*"] title_format " %title"
 gaps inner 10
 smart_gaps on
 smart_borders on
+
+# xfce settings
+exec --no-startup-id xfsettingsd --daemon
+
+# switch desktop left and right (and bind libinput gestures on)
+bindsym $mod+$alt+Left workspace prev
+bindsym $mod+$alt+Right workspace next
