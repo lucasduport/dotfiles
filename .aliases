@@ -28,22 +28,11 @@ alias cat='bat'
 
 EPITA_FOLDER=~/Documents/School/ING-EPITA/ING1
 alias epita="cd $EPITA_FOLDER"
-alias s6="cd $EPITA_FOLDER/S6"
-alias kern="cd $EPITA_FOLDER/S6/PROJET-K"
-alias PING="cd $EPITA_FOLDER/S6/PING"
-
-alias clang-format-epita='find . -iname "*.hh" -o -iname "*.cc" | xargs clang-format -i'
-alias autoTag='~/Scripts/autoTag.sh'
+alias yaka="/home/dup/Documents/Pro/YAKA/" 
 
 alias folderSize='du -hd 1'
 alias gdb='gdb -tui'
 alias make='make -s'
 alias resource='source ~/.zshrc'
-alias brc='gedit ~/.aliases'
 
-function delayTag()
-{
-    sleep $(( $1  * 60 ));
-    echo | ~/afs/.confs/autoTag.sh $2 > /dev/null 2>&1;
-    exit 0;
-}
+alias editconfig='vim ~/dotfiles/.config/i3/config'
