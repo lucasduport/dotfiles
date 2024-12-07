@@ -32,10 +32,11 @@ exec --no-startup-id nm-applet
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
-bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
-bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+
+# User-added function keys:
+bindsym XF86AudioMute         exec --no-startup-id amixer -D pipewire sset Master 0%
+bindsym XF86AudioLowerVolume  exec --no-startup-id amixer -D pipewire sset Master 5%-
+bindsym XF86AudioRaiseVolume  exec --no-startup-id amixer -D pipewire sset Master 5%+
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -53,8 +54,17 @@ bindsym $mod+Shift+Return exec cd "$(xcwd)" && exec kitty
 # lock the computer
 bindsym $mod+Shift+w exec i3lock-fancy
 
+# launch firefox
 bindsym $mod+b exec firefox
-bindsym $mod+e exec dolphin
+
+# launch file manager
+bindsym $mod+d exec thunar
+
+# launch vscode
+bindsym $mod+c exec code
+
+# launch flameshot
+bindsym $mod+p exec flameshot gui
 
 # kill focused window
 bindsym $mod+Shift+a kill
@@ -98,6 +108,7 @@ bindsym $mod+f fullscreen toggle
 # change container layout (stacked, tabbed, toggle split)
 bindsym $mod+s layout stacking
 bindsym $mod+z layout tabbed
+bindsym $mod+e layout toggle split
 
 # toggle tiling / floating
 bindsym $mod+Shift+space floating toggle
@@ -122,52 +133,35 @@ set $ws9 "9"
 set $ws10 "10"
 
 # switch to workspace
-bindsym $mod+ampersand workspace number $ws1
-bindsym $mod+eacute workspace number $ws2
-bindsym $mod+quotedbl workspace number $ws3
-bindsym $mod+apostrophe workspace number $ws4
-bindsym $mod+parenleft workspace number $ws5
-bindsym $mod+minus workspace number $ws6
-bindsym $mod+egrave workspace number $ws7
-bindsym $mod+underscore workspace number $ws8
-bindsym $mod+ccedilla workspace number $ws9
-bindsym $mod+agrave workspace number $ws10
+bindsym $mod+1 workspace number $ws1
+bindsym $mod+2 workspace number $ws2
+bindsym $mod+3 workspace number $ws3
+bindsym $mod+4 workspace number $ws4
+bindsym $mod+5 workspace number $ws5
+bindsym $mod+6 workspace number $ws6
+bindsym $mod+7 workspace number $ws7
+bindsym $mod+8 workspace number $ws8
+bindsym $mod+9 workspace number $ws9
+bindsym $mod+0 workspace number $ws10
 
 # move focused container to workspace
-bindsym $mod+Shift+ampersand move container to workspace number $ws1
-bindsym $mod+Shift+eacute move container to workspace number $ws2
-bindsym $mod+Shift+quotedbl move container to workspace number $ws3
-bindsym $mod+Shift+apostrophe move container to workspace number $ws4
+bindsym $mod+Shift+1 move container to workspace number $ws1
+bindsym $mod+Shift+2 move container to workspace number $ws2
+bindsym $mod+Shift+3 move container to workspace number $ws3
+bindsym $mod+Shift+4 move container to workspace number $ws4
 bindsym $mod+Shift+5 move container to workspace number $ws5
-bindsym $mod+Shift+minus move container to workspace number $ws6
-bindsym $mod+Shift+egrave move container to workspace number $ws7
-bindsym $mod+Shift+underscore move container to workspace number $ws8
-bindsym $mod+Shift+ccedilla move container to workspace number $ws9
-bindsym $mod+Shift+agrave move container to workspace number $ws10
+bindsym $mod+Shift+6 move container to workspace number $ws6
+bindsym $mod+Shift+7 move container to workspace number $ws7
+bindsym $mod+Shift+8 move container to workspace number $ws8
+bindsym $mod+Shift+9 move container to workspace number $ws9
+bindsym $mod+Shift+0 move container to workspace number $ws10
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
-
-
-# Modes
-#######################################
-# set shut down, restart and locking features
-# ⇒ type `$mod+Shift+Delete` then either `e`, `r` or `s`
-mode "$mode_system" {
-    bindsym e  exec --no-startup-id i3-msg exit
-    bindsym r  exec --no-startup-id systemctl reboot
-    bindsym s  exec --no-startup-id systemctl poweroff
-
-    # exit system mode with "Enter" or "Escape"
-    bindsym Return mode "default"
-    bindsym Escape mode "default"
-}
-set $mode_system (e)xit, (r)eboot, (s)hutdown
-bindsym $mod+Shift+Delete   mode "$mode_system"
+bindsym $mod+Shift+e exec shutdown-dialog
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
@@ -199,13 +193,10 @@ bindsym $mod+r mode "resize"
 # start picom for transparency
 exec --no-startup-id picom
 
-# render polybar
-exec_always --no-startup-id killall polybar
-exec_always --no-startup-id ~/.config/polybar/launch_polybar.sh
-
 # set background
 exec --no-startup-id feh --bg-scale ~/.config/backgrounds/mcbookpro-darkmode.jpg
 
+exec --no-startup-id flameshot
 # Brightness
 set $brightness-laptop-down      "brightnessctl s 5%-"
 set $brightness-laptop-up        "brightnessctl s 5%+"
@@ -219,9 +210,10 @@ gaps inner 10
 smart_gaps on
 smart_borders on
 
-# xfce settings
-exec --no-startup-id xfsettingsd --daemon
+bar {
+  position bottom                  # Position should be 'bottom' or 'top'.
+  status_command i3blocks       # Invoke i3blocks.
 
-# switch desktop left and right (and bind libinput gestures on)
-bindsym $mod+$alt+Left workspace prev
-bindsym $mod+$alt+Right workspace next
+  # Possible other bar configurations go here...
+  # ...
+}
