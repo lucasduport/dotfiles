@@ -1,20 +1,6 @@
 export EDITOR=nvim
 
-# Color support for less
-export LESS_TERMCAP_mb=$'\E[01;31m'       # begin blinking
-export LESS_TERMCAP_md=$'\E[01;38;5;74m'  # begin bold
-export LESS_TERMCAP_me=$'\E[0m'           # end mode
-export LESS_TERMCAP_se=$'\E[0m'           # end standout-mode
-export LESS_TERMCAP_so=$'\E[38;5;246m'    # begin standout-mode - info box
-export LESS_TERMCAP_ue=$'\E[0m'           # end underline
-export LESS_TERMCAP_us=$'\E[04;38;5;146m' # begin underline
-
-#Customization
-# vim Vianney
-export PATH="/run/current-system/sw/bin/clangd:$PATH"
-export PATH="/home/dup/Clone/RE-flex/bin:$PATH"
-
-
+# Practical usage
 alias ls='ls --color=auto'
 alias gs='git status --porcelain'
 alias grep='grep --color -n'
@@ -26,13 +12,25 @@ alias copy="xsel -b"
 alias vim='nvim'
 alias cat='bat'
 
-EPITA_FOLDER=~/Documents/School/ING-EPITA/ING1
-alias epita="cd $EPITA_FOLDER"
-alias yaka="/home/dup/Documents/Pro/YAKA/" 
-
 alias folderSize='du -hd 1'
 alias gdb='gdb -tui'
 alias make='make -s'
 alias resource='source ~/.zshrc'
 
 alias editconfig='vim ~/dotfiles/.config/i3/config'
+alias editaliases='vim ~/.aliases'
+
+  # Rebinds capslock to escape
+setxkbmap -option caps:escape
+
+# Temporary aliases
+  # EPTIA
+EPITA_FOLDER=~/Documents/School/ING-EPITA/ING1
+alias epita="cd $EPITA_FOLDER"
+
+  # YAKA
+alias yaka="/home/dup/Documents/Pro/YAKA/"
+alias atmt="poetry run atmt"
+
+alias ls="eza --icons=always"
+alias autoTag="~/Scripts/autoTag.sh"
