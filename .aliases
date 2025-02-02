@@ -17,11 +17,12 @@ alias gdb='gdb -tui'
 alias make='make -s'
 alias resource='source ~/.zshrc'
 
-alias editconfig='vim ~/dotfiles/.config/i3/config'
-alias editaliases='vim ~/.aliases'
+alias editi3='vim ~/dotfiles/.config/i3/config'
+alias editAliases='vim ~/.aliases'
+alias editAero='vim ~/dotfiles/.config/aerospace/.aerospace.toml'
 
   # Rebinds capslock to escape
-setxkbmap -option caps:escape
+#setxkbmap -option caps:escape
 
 # Temporary aliases
   # EPTIA
