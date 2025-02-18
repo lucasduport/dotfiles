@@ -1,7 +1,6 @@
 export EDITOR=nvim
 
 # Practical usage
-alias ls='ls --color=auto'
 alias gs='git status --porcelain'
 alias grep='grep --color -n'
 alias la='ls -a'
@@ -12,14 +11,20 @@ alias copy="xsel -b"
 alias vim='nvim'
 alias cat='bat'
 
+# Use zoxide with zsh
+alias cd='z'
+eval "$(zoxide init zsh)"
+
 alias folderSize='du -hd 1'
 alias gdb='gdb -tui'
 alias make='make -s'
 alias resource='source ~/.zshrc'
 
-alias editi3='vim ~/dotfiles/.config/i3/config'
+function my_touch {
+  mkdir -p $(dirname $1) && touch $1
+}
+
 alias editAliases='vim ~/.aliases'
-alias editAero='vim ~/dotfiles/.config/aerospace/.aerospace.toml'
 
   # Rebinds capslock to escape
 #setxkbmap -option caps:escape
@@ -34,4 +39,11 @@ alias yaka="/home/dup/Documents/Pro/YAKA/"
 alias atmt="poetry run atmt"
 
 alias ls="eza --icons=always"
+alias tree="eza --icons --tree"
 alias autoTag="~/Scripts/autoTag.sh"
+
+# Postgres variables 
+export PGDATA="$HOME/postgres_data"
+export PGHOST="/tmp"
+export PGPORT="5432"
+
