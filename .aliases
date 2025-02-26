@@ -1,49 +1,53 @@
 export EDITOR=nvim
 
+SCRIPTS_FOLDER="~/Scripts"
+YAKA_FOLDER="~/Documents/Pro/YAKA"
+EPITA_FOLDER="~/Documents/School/ING-EPITA/ING2"
+
+alias editAliases='vim ~/.aliases'
+alias resource='source ~/.zshrc'
+
 # Practical usage
 alias gs='git status --porcelain'
 alias grep='grep --color -n'
 alias la='ls -a'
 alias makeshortcut="ln -s"
-alias here="pwd | xsel -b"
-alias copy="xsel -b"
-
 alias vim='nvim'
 alias cat='bat'
-
+alias code='open -a "/Applications/Visual Studio Code.app"'
+alias firefox='open -a "/Applications/Firefox.app"'
 # Use zoxide with zsh
 alias cd='z'
-eval "$(zoxide init zsh)"
-
 alias folderSize='du -hd 1'
 alias gdb='gdb -tui'
 alias make='make -s'
-alias resource='source ~/.zshrc'
 
 function my_touch {
   mkdir -p $(dirname $1) && touch $1
 }
-
-alias editAliases='vim ~/.aliases'
 
   # Rebinds capslock to escape
 #setxkbmap -option caps:escape
 
 # Temporary aliases
   # EPTIA
-EPITA_FOLDER=~/Documents/School/ING-EPITA/ING1
 alias epita="cd $EPITA_FOLDER"
 
   # YAKA
-alias yaka="/home/dup/Documents/Pro/YAKA/"
+alias yaka="cd $YAKA_FOLDER"
+alias lyon="cd $YAKA_FOLDER/lyon"
+alias gravier=lyon
 alias atmt="poetry run atmt"
 
 alias ls="eza --icons=always"
 alias tree="eza --icons --tree"
-alias autoTag="~/Scripts/autoTag.sh"
+
+alias autoTag="$SCRIPTS_FOLDER/autoTag.sh"
+alias folderdiff="python3 $SCRIPTS_FOLDER/folder_diff.py"
 
 # Postgres variables 
 export PGDATA="$HOME/postgres_data"
 export PGHOST="/tmp"
 export PGPORT="5432"
 
+eval "$(zoxide init zsh)"

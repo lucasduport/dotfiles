@@ -69,6 +69,9 @@ if [ ! -d "$DIRECTORY" ]; then
     exit 1
 fi
 
+# clang-format
+find . \( -name "*.cc" -o -name "*.hh" -o -name "*.hxx" \) -exec clang-format -i {} \;
+
 # Check if eza is installed
 if command -v eza >/dev/null 2>&1; then
     eza --git-ignore -T --icons=always --git "$DIRECTORY"

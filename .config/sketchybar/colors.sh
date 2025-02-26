@@ -9,7 +9,7 @@ export WHITE=0xffffffff
 
 # -- Gray Scheme --
 export BAR_COLOR=0xff101314
-export ITEM_BG_COLOR=0xff353c3f
+export ITEM_BG_COLOR=0x0000000
 export ACCENT_COLOR=0xffffffff
 
 # -- Purple Scheme --
