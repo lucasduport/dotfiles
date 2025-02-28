@@ -7,6 +7,23 @@ EPITA_FOLDER="~/Documents/School/ING-EPITA/ING2"
 alias editAliases='vim ~/.aliases'
 alias resource='source ~/.zshrc'
 
+function conda_def {
+  # >>> conda initialize >>>
+  # !! Contents within this block are managed by 'conda init' !!
+  __conda_setup="$('/Users/lucasduport/miniconda3/bin/conda' 'shell.zsh' 'hook' 2>/dev/null)"
+  if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+  else
+    if [ -f "/Users/lucasduport/miniconda3/etc/profile.d/conda.sh" ]; then
+      . "/Users/lucasduport/miniconda3/etc/profile.d/conda.sh"
+    else
+      export PATH="/Users/lucasduport/miniconda3/bin:$PATH"
+    fi
+  fi
+}
+
+unset __conda_setup
+# <<< conda initialize <<<
 # Practical usage
 alias gs='git status --porcelain'
 alias grep='grep --color -n'
@@ -26,14 +43,14 @@ function my_touch {
   mkdir -p $(dirname $1) && touch $1
 }
 
-  # Rebinds capslock to escape
+# Rebinds capslock to escape
 #setxkbmap -option caps:escape
 
 # Temporary aliases
-  # EPTIA
+# EPTIA
 alias epita="cd $EPITA_FOLDER"
 
-  # YAKA
+# YAKA
 alias yaka="cd $YAKA_FOLDER"
 alias lyon="cd $YAKA_FOLDER/lyon"
 alias gravier=lyon
@@ -45,8 +62,7 @@ alias tree="eza --icons --tree"
 alias autoTag="$SCRIPTS_FOLDER/autoTag.sh"
 alias folderdiff="python3 $SCRIPTS_FOLDER/folder_diff.py"
 
-# Postgres variables 
+# Postgres variables
 export PGDATA="$HOME/postgres_data"
 export PGHOST="/tmp"
 export PGPORT="5432"
-
