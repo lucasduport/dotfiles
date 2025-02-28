@@ -1,12 +1,13 @@
 import os
 import hashlib
-import argparse
+import click
 from pathlib import Path
-from typing import Dict, Set, Tuple, List
+from typing import Dict, Set, Tuple, List, Optional
 import shutil
 import math
 import difflib
 import sys
+from itertools import combinations
 
 def get_file_hash(file_path: str) -> str:
     """
@@ -160,7 +161,7 @@ def visualize_differences(dir1_name: str, dir2_name: str,
     total_count = count_only_in_dir1 + count_only_in_dir2 + count_modified
     
     if total_count == 0:
-        print("\nNo differences found - directories are identical.\n")
+        click.echo("\nNo differences found - directories are identical.\n")
         return
     
     # Calculate percentages
@@ -169,21 +170,21 @@ def visualize_differences(dir1_name: str, dir2_name: str,
     percent_modified = (count_modified / total_count) * 100
     
     # Print summary header
-    print("\n" + "=" * terminal_width)
-    print(f"DIRECTORY COMPARISON SUMMARY: {dir1_name} vs {dir2_name}")
-    print("=" * terminal_width)
+    click.echo("\n" + "=" * terminal_width)
+    click.echo(f"DIRECTORY COMPARISON SUMMARY: {dir1_name} vs {dir2_name}")
+    click.echo("=" * terminal_width)
     
     # Print stats
-    print(f"\nTotal differences: {total_count} files")
-    print(f"- Only in {dir1_name}: {count_only_in_dir1} files ({percent_only_in_dir1:.1f}%)")
-    print(f"- Only in {dir2_name}: {count_only_in_dir2} files ({percent_only_in_dir2:.1f}%)")
-    print(f"- Modified files: {count_modified} files ({percent_modified:.1f}%)")
+    click.echo(f"\nTotal differences: {total_count} files")
+    click.echo(f"- Only in {dir1_name}: {count_only_in_dir1} files ({percent_only_in_dir1:.1f}%)")
+    click.echo(f"- Only in {dir2_name}: {count_only_in_dir2} files ({percent_only_in_dir2:.1f}%)")
+    click.echo(f"- Modified files: {count_modified} files ({percent_modified:.1f}%)")
     
     # Visual bar chart
     bar_width = min(terminal_width - 10, 60)  # Leave some margin
     
-    print("\nVisual Difference Distribution:")
-    print("The bar below shows the relative proportion of each type of difference:")
+    click.echo("\nVisual Difference Distribution:")
+    click.echo("The bar below shows the relative proportion of each type of difference:")
     
     # Calculate bar segments
     dir1_segment = math.floor((count_only_in_dir1 / total_count) * bar_width)
@@ -191,46 +192,30 @@ def visualize_differences(dir1_name: str, dir2_name: str,
     dir2_segment = bar_width - dir1_segment - modified_segment
     
     # Create color codes if terminal supports it
-    try:
-        # Red for files only in dir1
-        red = "\033[91m"
-        # Yellow for modified files
-        yellow = "\033[93m"
-        # Green for files only in dir2
-        green = "\033[92m"
-        # Reset color
-        reset = "\033[0m"
-        has_colors = True
-    except:
-        # Fallback if terminal doesn't support colors
-        red = ""
-        yellow = ""
-        green = ""
-        reset = ""
-        has_colors = False
+    has_colors = not os.environ.get('NO_COLOR') and not os.environ.get('CLICOLOR') == '0'
     
-    # Create the colored or character-based bar
-    if has_colors:
-        # Color version
-        bar = "│" + red + "■" * dir1_segment + reset + yellow + "■" * modified_segment + reset + green + "■" * dir2_segment + reset + "│"
-    else:
-        # Plain text version
-        bar = "│" + "R" * dir1_segment + "M" * modified_segment + "A" * dir2_segment + "│"
+    # Define colors
+    red = click.style("■", fg="red") if has_colors else "R"
+    yellow = click.style("■", fg="yellow") if has_colors else "M"
+    green = click.style("■", fg="green") if has_colors else "A"
+    
+    # Create the bar
+    bar = "│" + red * dir1_segment + yellow * modified_segment + green * dir2_segment + "│"
     
     # Print the visualization
-    print("-" * (bar_width + 2))
-    print(bar)
-    print("-" * (bar_width + 2))
+    click.echo("-" * (bar_width + 2))
+    click.echo(bar)
+    click.echo("-" * (bar_width + 2))
     
     # Print the legend
     if has_colors:
-        print(f"{red}■{reset} = Only in {dir1_name} ({count_only_in_dir1} files) | " +
-              f"{yellow}■{reset} = Modified ({count_modified} files) | " +
-              f"{green}■{reset} = Only in {dir2_name} ({count_only_in_dir2} files)")
+        click.echo(f"{click.style('■', fg='red')} = Only in {dir1_name} ({count_only_in_dir1} files) | " +
+                  f"{click.style('■', fg='yellow')} = Modified ({count_modified} files) | " +
+                  f"{click.style('■', fg='green')} = Only in {dir2_name} ({count_only_in_dir2} files)")
     else:
-        print(f"R = Only in {dir1_name} ({count_only_in_dir1} files) | " +
-              f"M = Modified ({count_modified} files) | " +
-              f"A = Only in {dir2_name} ({count_only_in_dir2} files)")
+        click.echo(f"R = Only in {dir1_name} ({count_only_in_dir1} files) | " +
+                  f"M = Modified ({count_modified} files) | " +
+                  f"A = Only in {dir2_name} ({count_only_in_dir2} files)")
         
     # Print extent of differences
     if total_count > 0:
@@ -241,22 +226,22 @@ def visualize_differences(dir1_name: str, dir2_name: str,
         
         diff_percentage = (total_count / total_files) * 100 if total_files > 0 else 0
         
-        print("\nOverall Difference Assessment:")
-        print(f"- Total files examined: {total_files}")
-        print(f"- Different files: {total_count} ({diff_percentage:.1f}%)")
+        click.echo("\nOverall Difference Assessment:")
+        click.echo(f"- Total files examined: {total_files}")
+        click.echo(f"- Different files: {total_count} ({diff_percentage:.1f}%)")
         
         if diff_percentage < 5:
-            print("MINIMAL DIFFERENCES: Less than 5% of files differ")
+            click.echo("MINIMAL DIFFERENCES: Less than 5% of files differ")
         elif diff_percentage < 15:
-            print("MINOR DIFFERENCES: Between 5% and 15% of files differ")
+            click.echo("MINOR DIFFERENCES: Between 5% and 15% of files differ")
         elif diff_percentage < 30:
-            print("MODERATE DIFFERENCES: Between 15% and 30% of files differ")
+            click.echo("MODERATE DIFFERENCES: Between 15% and 30% of files differ")
         elif diff_percentage < 50:
-            print("SIGNIFICANT DIFFERENCES: Between 30% and 50% of files differ")
+            click.echo("SIGNIFICANT DIFFERENCES: Between 30% and 50% of files differ")
         else:
-            print("MAJOR DIFFERENCES: More than 50% of files differ")
+            click.echo("MAJOR DIFFERENCES: More than 50% of files differ")
             
-    print("\n" + "=" * terminal_width + "\n")
+    click.echo("\n" + "=" * terminal_width + "\n")
 
 def display_file_diffs(dir1: str, dir2: str, modified_files: Set[str]) -> None:
     """
@@ -268,108 +253,224 @@ def display_file_diffs(dir1: str, dir2: str, modified_files: Set[str]) -> None:
         modified_files: Set of files that are modified
     """
     if not modified_files:
-        print("No modified files to diff.")
+        click.echo("No modified files to diff.")
         return
     
     terminal_width = shutil.get_terminal_size().columns
     
     for file_path in sorted(modified_files):
-        print("\n" + "=" * terminal_width)
-        print(f"DIFF: {file_path}")
-        print("-" * terminal_width)
+        click.echo("\n" + "=" * terminal_width)
+        click.echo(f"DIFF: {file_path}")
+        click.echo("-" * terminal_width)
         
         diff_lines = show_file_diff(file_path, dir1, dir2)
         
-        # Create color codes if terminal supports it
-        try:
-            # Colors for diff
-            red = "\033[91m"      # for removed lines
-            green = "\033[92m"    # for added lines
-            cyan = "\033[96m"     # for diff header
-            reset = "\033[0m"
-            has_colors = True
-        except:
-            red = ""
-            green = ""
-            cyan = ""
-            reset = ""
-            has_colors = False
-        
+        # Use Click styling for diff output
         for line in diff_lines:
-            if has_colors:
-                if line.startswith('---') or line.startswith('+++'):
-                    print(f"{cyan}{line}{reset}")
-                elif line.startswith('-'):
-                    print(f"{red}{line}{reset}")
-                elif line.startswith('+'):
-                    print(f"{green}{line}{reset}")
-                elif line.startswith('@@'):
-                    print(f"{cyan}{line}{reset}")
-                else:
-                    print(line)
+            if line.startswith('---') or line.startswith('+++'):
+                click.echo(click.style(line, fg='cyan'))
+            elif line.startswith('-'):
+                click.echo(click.style(line, fg='red'))
+            elif line.startswith('+'):
+                click.echo(click.style(line, fg='green'))
+            elif line.startswith('@@'):
+                click.echo(click.style(line, fg='cyan'))
             else:
-                print(line)
+                click.echo(line)
                 
-        print("-" * terminal_width)
+        click.echo("-" * terminal_width)
 
-def main():
-    parser = argparse.ArgumentParser(description='Compare two directories recursively and visualize differences.')
-    parser.add_argument('dir1', help='First directory to compare')
-    parser.add_argument('dir2', help='Second directory to compare')
-    parser.add_argument('--no-vis', action='store_true', help='Disable visualization')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Show detailed file lists')
-    parser.add_argument('--diff', '-d', action='store_true', help='Show content differences for modified files')
-    args = parser.parse_args()
+def read_directories_from_file(file_path: str) -> List[str]:
+    """
+    Read directory paths from a text file.
     
+    Args:
+        file_path: Path to the text file containing directory paths
+        
+    Returns:
+        List of directory paths
+    """
+    directories = []
+    try:
+        with open(file_path, 'r') as f:
+            directories = [line.strip() for line in f.readlines() if line.strip() and not line.strip().startswith('#')]
+        
+        # Validate that all directories exist
+        for directory in directories:
+            if not os.path.isdir(directory):
+                click.echo(f"Warning: Directory '{directory}' does not exist and will be skipped.")
+                directories.remove(directory)
+                
+        return directories
+    except Exception as e:
+        click.echo(f"Error reading directory list from {file_path}: {str(e)}", err=True)
+        return []
+
+def compare_directory_pair(dir1: str, dir2: str, no_vis: bool, verbose: bool, show_diff: bool) -> None:
+    """
+    Compare a pair of directories and display results based on options.
+    
+    Args:
+        dir1: Path to the first directory
+        dir2: Path to the second directory
+        no_vis: If True, disable visualization
+        verbose: If True, show detailed file lists
+        show_diff: If True, show content differences for modified files
+    """
     # Check if directories exist
-    if not os.path.isdir(args.dir1):
-        print(f"Error: '{args.dir1}' is not a valid directory")
+    if not os.path.isdir(dir1):
+        click.echo(f"Error: '{dir1}' is not a valid directory", err=True)
         return
     
-    if not os.path.isdir(args.dir2):
-        print(f"Error: '{args.dir2}' is not a valid directory")
+    if not os.path.isdir(dir2):
+        click.echo(f"Error: '{dir2}' is not a valid directory", err=True)
         return
     
-    print(f"Comparing {args.dir1} and {args.dir2}...")
+    click.echo(f"Comparing {dir1} and {dir2}...")
     
-    files_only_in_dir1, files_only_in_dir2, files_with_diff_content = compare_directories(args.dir1, args.dir2)
+    files_only_in_dir1, files_only_in_dir2, files_with_diff_content = compare_directories(dir1, dir2)
     
     # Visualize the differences
-    if not args.no_vis:
+    if not no_vis:
         visualize_differences(
-            args.dir1, 
-            args.dir2, 
+            dir1, 
+            dir2, 
             files_only_in_dir1, 
             files_only_in_dir2, 
             files_with_diff_content
         )
     
     # Report detailed differences if verbose mode
-    if args.verbose:
+    if verbose:
         if files_only_in_dir1:
-            print(f"Files only in '{args.dir1}':")
+            click.echo(f"Files only in '{dir1}':")
             for file in sorted(files_only_in_dir1):
-                print(f"  {file}")
-            print()
+                click.echo(f"  {file}")
+            click.echo()
         
         if files_only_in_dir2:
-            print(f"Files only in '{args.dir2}':")
+            click.echo(f"Files only in '{dir2}':")
             for file in sorted(files_only_in_dir2):
-                print(f"  {file}")
-            print()
+                click.echo(f"  {file}")
+            click.echo()
         
         if files_with_diff_content:
-            print("Files with the same path but different content:")
+            click.echo("Files with the same path but different content:")
             for file in sorted(files_with_diff_content):
-                print(f"  {file}")
-            print()
+                click.echo(f"  {file}")
+            click.echo()
         
         if not (files_only_in_dir1 or files_only_in_dir2 or files_with_diff_content):
-            print("The directories are identical.")
+            click.echo("The directories are identical.")
     
     # Show actual diffs if requested
-    if args.diff:
-        display_file_diffs(args.dir1, args.dir2, files_with_diff_content)
+    if show_diff:
+        display_file_diffs(dir1, dir2, files_with_diff_content)
+
+def compare_multiple_directories(directories: List[str], no_vis: bool, verbose: bool, show_diff: bool) -> None:
+    """
+    Compare multiple directories pairwise.
     
+    Args:
+        directories: List of directory paths
+        no_vis: If True, disable visualization
+        verbose: If True, show detailed file lists
+        show_diff: If True, show content differences for modified files
+    """
+    if len(directories) < 2:
+        click.echo("At least two directories are required for comparison.", err=True)
+        return
+    
+    # Compare all pairs of directories
+    for dir1, dir2 in combinations(directories, 2):
+        compare_directory_pair(dir1, dir2, no_vis, verbose, show_diff)
+
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+@click.version_option(version="1.1.0")
+def cli():
+    """Directory comparison tool that helps you analyze differences between directories."""
+    pass
+
+@cli.command()
+@click.argument('dir1', type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True))
+@click.argument('dir2', type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True))
+@click.option('--no-vis', is_flag=True, help='Disable visualization')
+@click.option('--verbose', '-v', is_flag=True, help='Show detailed file lists')
+@click.option('--diff', '-d', is_flag=True, help='Show content differences for modified files')
+def compare(dir1, dir2, no_vis, verbose, diff):
+    """
+    Compare two directories and show their differences.
+    
+    DIR1 is the path to the first directory to compare.
+    DIR2 is the path to the second directory to compare.
+    """
+    compare_directory_pair(dir1, dir2, no_vis, verbose, diff)
+
+@cli.command()
+@click.argument('file_path', type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True))
+@click.option('--no-vis', is_flag=True, help='Disable visualization')
+@click.option('--verbose', '-v', is_flag=True, help='Show detailed file lists')
+@click.option('--diff', '-d', is_flag=True, help='Show content differences for modified files')
+def compare_from_file(file_path, no_vis, verbose, diff):
+    """
+    Compare directories listed in a text file.
+    
+    FILE_PATH is the path to a text file containing a list of directories to compare.
+    Each directory should be on a separate line. Comments can be added using # character.
+    """
+    directories = read_directories_from_file(file_path)
+    if directories:
+        click.echo(f"Found {len(directories)} directories to compare.")
+        compare_multiple_directories(directories, no_vis, verbose, diff)
+    else:
+        click.echo("No valid directories found in the file.", err=True)
+
+@cli.command()
+@click.argument('directories', nargs=-1, type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True))
+@click.option('--no-vis', is_flag=True, help='Disable visualization')
+@click.option('--verbose', '-v', is_flag=True, help='Show detailed file lists')
+@click.option('--diff', '-d', is_flag=True, help='Show content differences for modified files')
+def compare_multiple(directories, no_vis, verbose, diff):
+    """
+    Compare multiple directories pairwise.
+    
+    DIRECTORIES are two or more directory paths to compare.
+    """
+    if len(directories) < 2:
+        click.echo("At least two directories are required for comparison.", err=True)
+        return
+    
+    compare_multiple_directories(list(directories), no_vis, verbose, diff)
+
+@cli.command()
+def generate_sample_file():
+    """Generate a sample directory list file."""
+    sample_content = """# Directory comparison list
+# Each line should contain a valid directory path
+# Lines starting with # are treated as comments and ignored
+
+/path/to/first/directory
+/path/to/second/directory
+/path/to/third/directory
+
+# You can add as many directories as needed
+# All directories will be compared pairwise
+"""
+    
+    output_file = "directory_list_sample.txt"
+    
+    # Don't overwrite existing file without confirmation
+    if os.path.exists(output_file):
+        if not click.confirm(f"File '{output_file}' already exists. Overwrite?"):
+            click.echo("Aborted.")
+            return
+    
+    try:
+        with open(output_file, 'w') as f:
+            f.write(sample_content)
+        click.echo(f"Sample file created: {output_file}")
+    except Exception as e:
+        click.echo(f"Error creating sample file: {str(e)}", err=True)
+
 if __name__ == "__main__":
-    main()
+    cli()
