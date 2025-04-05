@@ -1,19 +1,5 @@
 return {
   {
-    "stevearc/conform.nvim",
-    -- event = 'BufWritePre', -- uncomment for format on save
-    opts = require "configs.conform",
-  },
-
-  -- These are some examples, uncomment them if you want to see them work!
-  {
-    "neovim/nvim-lspconfig",
-    config = function()
-      require "configs.lspconfig"
-    end,
-  },
-
-  {
     "github/copilot.vim",
     -- disable copilot by default
     lazy = true,
@@ -42,6 +28,7 @@ return {
 
   {
     "stevearc/conform.nvim",
+    opts = require "configs.conform",
     lazy = true,
     event = { "BufReadPre", "BufNewFile" }, -- to disable, comment this out
     config = function()
@@ -78,6 +65,25 @@ return {
         }
       end, { desc = "Format file or range (in visual mode)" })
     end,
+  },
+  {
+    "neovim/nvim-lspconfig",
+    config = function()
+      require "configs.lspconfig"
+    end,
+  },
+  {
+    "williamboman/mason.nvim",
+    opts = {
+      ensure_installed = {
+        "lua-language-server",
+        "html-lsp",
+        "prettier",
+        "stylua",
+        "gopls",
+        "quick-lint-ls"
+      },
+    },
   },
   -- {
   -- 	"nvim-treesitter/nvim-treesitter",
