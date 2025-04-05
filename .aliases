@@ -1,11 +1,11 @@
 export EDITOR=nvim
 
-SCRIPTS_FOLDER="~/Scripts"
-YAKA_FOLDER="~/Documents/Pro/YAKA"
-EPITA_FOLDER="~/Documents/School/ING-EPITA/ING2"
+SCRIPTS_FOLDER="$HOME/Scripts"
+YAKA_FOLDER="$HOME/Documents/Pro/YAKA"
+EPITA_FOLDER="$HOME/Documents/School/ING-EPITA/ING2"
 
-alias editAliases='vim ~/.aliases'
-alias resource='source ~/.zshrc'
+alias editAliases='vim $HOME/.aliases'
+alias resource='source $HOME/.zshrc'
 
 function conda_def {
   # >>> conda initialize >>>
@@ -20,11 +20,13 @@ function conda_def {
       export PATH="/Users/lucasduport/miniconda3/bin:$PATH"
     fi
   fi
+  unset __conda_setup
+  # <<< conda initialize <<<
 }
 
-unset __conda_setup
-# <<< conda initialize <<<
+
 # Practical usage
+
 alias gs='git status --porcelain'
 alias grep='grep --color -n'
 alias la='ls -a'
@@ -33,8 +35,12 @@ alias vim='nvim'
 alias cat='bat'
 alias code='open -a "/Applications/Visual Studio Code.app"'
 alias firefox='open -a "/Applications/Firefox.app"'
+alias idea='open -a "/Applications/IntelliJ IDEA.app"'
+alias clion='open -a "/Applications/Clion.app"'
+
 # Use zoxide with zsh
 alias cd='z'
+alias cdi='zi'
 alias folderSize='du -hd 1'
 alias gdb='gdb -tui'
 alias make='make -s'
@@ -61,8 +67,14 @@ alias tree="eza --icons --tree"
 
 alias autoTag="$SCRIPTS_FOLDER/autoTag.sh"
 alias folderdiff="python3 $SCRIPTS_FOLDER/folder_diff.py"
+alias tagdiff="python3 $SCRIPTS_FOLDER/tag_diff.py"
 
 # Postgres variables
 export PGDATA="$HOME/postgres_data"
 export PGHOST="/tmp"
 export PGPORT="5432"
+
+# Elastic search variables
+export ES_HOME="$HOME/elasticsearch-8.0.1"
+export JAVA_HOME=/Users/lucasduport/Library/Java/JavaVirtualMachines/corretto-17.0.14/Contents/Home
+
