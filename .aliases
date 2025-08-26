@@ -1,8 +1,9 @@
 export EDITOR=nvim
 
 SCRIPTS_FOLDER="$HOME/Scripts"
-YAKA_FOLDER="$HOME/Documents/Pro/YAKA"
-EPITA_FOLDER="$HOME/Documents/School/ING-EPITA/ING2"
+YAKA_FOLDER="$HOME/Documents/Pro/EPITA/YAKA"
+ACU_FOLDER="$HOME/Documents/Pro/EPITA/ACU"
+EPITA_FOLDER="$HOME/Documents/School/ING-EPITA/ING3"
 
 alias editAliases='vim $HOME/.aliases'
 alias resource='source $HOME/.zshrc'
@@ -35,12 +36,17 @@ alias vim='nvim'
 alias cat='bat'
 alias code='open -a "/Applications/Visual Studio Code.app"'
 alias firefox='open -a "/Applications/Firefox.app"'
+alias zen='open -a "/Applications/Zen.app"'
 alias idea='open -a "/Applications/IntelliJ IDEA.app"'
 alias clion='open -a "/Applications/Clion.app"'
 
 # Use zoxide with zsh
 alias cd='z'
 alias cdi='zi'
+
+alias ls="eza --icons=always"
+alias tree="eza --icons --tree"
+
 alias folderSize='du -hd 1'
 alias gdb='gdb -tui'
 alias make='make -s'
@@ -58,12 +64,7 @@ alias epita="cd $EPITA_FOLDER"
 
 # YAKA
 alias yaka="cd $YAKA_FOLDER"
-alias lyon="cd $YAKA_FOLDER/lyon"
-alias gravier=lyon
-alias atmt="poetry run atmt"
-
-alias ls="eza --icons=always"
-alias tree="eza --icons --tree"
+alias acu="cd $ACU_FOLDER"
 
 alias autoTag="$SCRIPTS_FOLDER/autoTag.sh"
 alias folderdiff="python3 $SCRIPTS_FOLDER/folder_diff.py"
@@ -78,3 +79,7 @@ export PGPORT="5432"
 export ES_HOME="$HOME/elasticsearch-8.0.1"
 export JAVA_HOME=/Users/lucasduport/Library/Java/JavaVirtualMachines/corretto-17.0.14/Contents/Home
 
+# Go 1.17
+export PATH=$PATH:/usr/local/go/bin
+
+source ~/.private.aliases

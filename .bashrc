@@ -43,4 +43,5 @@ export PGDATA="$HOME/postgres_data"
 export PGHOST="/tmp"
 PATH="$PATH:$HOME/.local/bin"
 
+eval "$(zoxide init bash)"
 source ~/.aliases
