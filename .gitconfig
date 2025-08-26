@@ -3,7 +3,7 @@
 [user]
 	email = lucas.duport@epita.fr
 	name = Lucas Duport
-	signingkey = /Users/lucasduport/.ssh/id_ed25519.pub
+	signingkey = /Users/lucasduport/.ssh/id_rsa.pub
 [init]
 	defaultBranch = master
 [gpg]
