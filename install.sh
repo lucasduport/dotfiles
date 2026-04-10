@@ -54,14 +54,15 @@ ask() {
 }
 
 brew_install() {
-  local pkg="$1" label="${2:-$1}"
+  local pkg="$1" label="${2:-$1}" out
   if brew list --formula "$pkg" &>/dev/null; then
     log_skip "$label" "$(brew info --json "$pkg" 2>/dev/null | jq -r '.[0].versions.stable' 2>/dev/null || echo "installed")"
   else
     log_step "Installing ${label}…"
-    if brew install "$pkg" --quiet 2>/dev/null; then
+    if out=$(brew install "$pkg" --quiet 2>&1); then
       log_ok "$label" "$(brew info --json "$pkg" 2>/dev/null | jq -r '.[0].versions.stable' 2>/dev/null || echo "✓")"
     else
+      echo "$out" >&2
       log_fail "$label" "brew install $pkg failed — skipping"
       FAILED+=("$label")
     fi
@@ -69,14 +70,15 @@ brew_install() {
 }
 
 brew_cask_install() {
-  local pkg="$1" label="${2:-$1}"
+  local pkg="$1" label="${2:-$1}" out
   if brew list --cask "$pkg" &>/dev/null; then
     log_skip "$label" "$(brew info --cask "$pkg" 2>/dev/null | head -1 | awk '{print $NF}' || echo "installed")"
   else
     log_step "Installing ${label} (cask)…"
-    if brew install --cask "$pkg" --quiet 2>/dev/null; then
+    if out=$(brew install --cask "$pkg" --quiet 2>&1); then
       log_ok "$label" "installed"
     else
+      echo "$out" >&2
       log_fail "$label" "brew install --cask $pkg failed — skipping"
       FAILED+=("$label")
     fi
@@ -187,13 +189,11 @@ brew_install "git-delta" "delta (diff pager)"
 brew_install "gh"        "GitHub CLI"
 brew_install "tig"       "tig (git TUI)"
 
-log_step "Configuring global git settings…"
-git config --global core.pager "delta"
-git config --global interactive.diffFilter "delta --color-only"
-git config --global delta.navigate true
-git config --global delta.side-by-side true
-git config --global init.defaultBranch "main"
-log_ok "Git config" "delta pager, defaultBranch=main"
+if command -v git-lfs &>/dev/null; then
+  log_step "Initialising Git LFS…"
+  git lfs install --quiet
+  log_ok "Git LFS" "initialised"
+fi
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
