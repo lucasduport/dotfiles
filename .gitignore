@@ -1,5 +1,9 @@
+node_modules/
 .DS_Store
+.config/nvim/
 raycast
 secrets.conf
+.config/nix/secrets.conf
 .config/shell/private.sh
 .config/shell/vibe.sh
+.gitconfig.local

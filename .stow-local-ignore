@@ -2,6 +2,9 @@
 .git
 .gitignore
 .gitconfig_ignore
-README
+README.md
 .config/shell/private.sh
 .config/shell/vibe.sh
+.config/nix/secrets.conf
+.config/nvim/
+.gitconfig.local

@@ -3,7 +3,7 @@
 # Run:        bash install.sh          (interactive — pick what to install)
 #             bash install.sh --all    (install everything, no prompts)
 
-set -euo pipefail
+set -uo pipefail
 
 # ── Flags ─────────────────────────────────────────────────────────────────────
 AUTO_YES=false
@@ -40,6 +40,9 @@ log_step()  { echo -e "  ${CYAN}→${RESET} $1"; }
 log_ok()    { echo -e "  ${GREEN}✓${RESET} ${BOLD}${1}${RESET}  ${DIM}${2}${RESET}"; }
 log_skip()  { echo -e "  ${YELLOW}↩${RESET} ${BOLD}${1}${RESET}  ${DIM}already installed — ${2}${RESET}"; }
 log_error() { echo -e "  ${RED}✗${RESET} $1"; }
+log_fail()  { echo -e "  ${RED}✗ FAILED${RESET} ${BOLD}${1}${RESET}  ${DIM}${2}${RESET}"; }
+
+FAILED=()  # tracks packages that failed to install
 
 # Returns 0 (yes) or 1 (no). Skips prompt when --all is set.
 ask() {
@@ -53,11 +56,15 @@ ask() {
 brew_install() {
   local pkg="$1" label="${2:-$1}"
   if brew list --formula "$pkg" &>/dev/null; then
-    log_skip "$label" "$(brew info --json "$pkg" 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['versions']['stable'])" 2>/dev/null || echo "installed")"
+    log_skip "$label" "$(brew info --json "$pkg" 2>/dev/null | jq -r '.[0].versions.stable' 2>/dev/null || echo "installed")"
   else
     log_step "Installing ${label}…"
-    brew install "$pkg" --quiet
-    log_ok "$label" "$(brew info --json "$pkg" 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['versions']['stable'])" 2>/dev/null || echo "✓")"
+    if brew install "$pkg" --quiet 2>/dev/null; then
+      log_ok "$label" "$(brew info --json "$pkg" 2>/dev/null | jq -r '.[0].versions.stable' 2>/dev/null || echo "✓")"
+    else
+      log_fail "$label" "brew install $pkg failed — skipping"
+      FAILED+=("$label")
+    fi
   fi
 }
 
@@ -67,8 +74,12 @@ brew_cask_install() {
     log_skip "$label" "$(brew info --cask "$pkg" 2>/dev/null | head -1 | awk '{print $NF}' || echo "installed")"
   else
     log_step "Installing ${label} (cask)…"
-    brew install --cask "$pkg" --quiet
-    log_ok "$label" "installed"
+    if brew install --cask "$pkg" --quiet 2>/dev/null; then
+      log_ok "$label" "installed"
+    else
+      log_fail "$label" "brew install --cask $pkg failed — skipping"
+      FAILED+=("$label")
+    fi
   fi
 }
 
@@ -121,6 +132,7 @@ log_ok "Dotfiles" "linked"
 if ask "Shell & Prompt (starship, fastfetch, zsh plugins)"; then
 section "03  Shell & Prompt"
 # ─────────────────────────────────────────────────────────────────────────────
+brew_install "zsh"                     "Zsh"
 brew_install "starship"                "Starship prompt"
 brew_install "fastfetch"               "Fastfetch"
 brew_install "zsh-autosuggestions"     "zsh-autosuggestions"
@@ -128,12 +140,14 @@ brew_install "zsh-syntax-highlighting" "zsh-syntax-highlighting"
 
 log_step "Setting Zsh as default shell…"
 ZSH_PATH="$(brew --prefix)/bin/zsh"
-if [[ "$SHELL" != "$ZSH_PATH" ]]; then
+if [[ ! -x "$ZSH_PATH" ]]; then
+  log_error "Brew zsh not found at $ZSH_PATH — skipping chsh"
+elif [[ "$SHELL" == "$ZSH_PATH" ]]; then
+  log_skip "Default shell" "$ZSH_PATH"
+else
   grep -q "$ZSH_PATH" /etc/shells || echo "$ZSH_PATH" | sudo tee -a /etc/shells
   chsh -s "$ZSH_PATH"
   log_ok "Default shell" "$ZSH_PATH"
-else
-  log_skip "Default shell" "$ZSH_PATH"
 fi
 fi
 
@@ -163,10 +177,11 @@ log_ok "fzf" "shell integration ready"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-if ask "Git tools (git, lazygit, delta, gh, tig)"; then
+if ask "Git tools (git, lazygit, delta, gh, tig, git-lfs)"; then
 section "05  Git"
 # ─────────────────────────────────────────────────────────────────────────────
 brew_install "git"       "Git"
+brew_install "git-lfs"   "Git LFS"
 brew_install "lazygit"   "lazygit"
 brew_install "git-delta" "delta (diff pager)"
 brew_install "gh"        "GitHub CLI"
@@ -182,7 +197,7 @@ log_ok "Git config" "delta pager, defaultBranch=main"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-if ask "Neovim (neovim, lua, luarocks, cmake, gcc)"; then
+if ask "Neovim + NvChad (neovim, lua, luarocks, cmake, gcc)"; then
 section "06  Neovim"
 # ─────────────────────────────────────────────────────────────────────────────
 brew_install "neovim"    "Neovim"
@@ -191,6 +206,19 @@ brew_install "luarocks"  "LuaRocks"
 brew_install "make"      "make"
 brew_install "cmake"     "cmake"
 brew_install "gcc"       "gcc"
+
+log_step "Installing NvChad starter…"
+if [ -d "$HOME/.config/nvim/.git" ]; then
+  log_skip "NvChad" "already installed at ~/.config/nvim"
+else
+  rm -rf "$HOME/.config/nvim"
+  if git clone https://github.com/NvChad/starter "$HOME/.config/nvim" --quiet; then
+    log_ok "NvChad" "cloned — run nvim to finish plugin setup"
+  else
+    log_fail "NvChad" "git clone failed"
+    FAILED+=("NvChad")
+  fi
+fi
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -262,12 +290,22 @@ brew_cask_install "font-fira-code-nerd-font"      "FiraCode Nerd Font"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
+if [[ ${#FAILED[@]} -gt 0 ]]; then
+  section "⚠ Failed installs"
+  echo ""
+  for pkg in "${FAILED[@]}"; do
+    echo -e "  ${RED}✗${RESET} $pkg"
+  done
+  echo ""
+  echo -e "  ${DIM}Re-run the script or install manually with: brew install <pkg>${RESET}"
+fi
+
 section "Done — next steps"
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
 echo -e "  ${BOLD}Manual steps remaining:${RESET}"
 echo ""
-echo -e "  ${YELLOW}1.${RESET}  Drop a PNG at ${CYAN}~/.config/fastfetch/logo.png${RESET} for the terminal banner"
+echo -e "  ${YELLOW}1.${RESET}  Create ${CYAN}~/.gitconfig.local${RESET} — email and signing identity for this machine (see README)"
 echo -e "  ${YELLOW}2.${RESET}  Create ${CYAN}~/.config/shell/private.sh${RESET}  — private aliases, SSH shortcuts"
 echo -e "  ${YELLOW}3.${RESET}  Create ${CYAN}~/.config/shell/vibe.sh${RESET}     — vibe coding / AI env vars"
 echo -e "  ${YELLOW}4.${RESET}  Set up ${CYAN}~/.ssh/id_ed25519${RESET} and add to GitHub"
