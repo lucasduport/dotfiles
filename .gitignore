@@ -1,3 +1,5 @@
-.DS_store
+.DS_Store
 raycast
 secrets.conf
+.config/shell/private.sh
+.config/shell/vibe.sh
