@@ -37,5 +37,8 @@ setopt extended_history
 # ── Prompt: Starship ──────────────────────────────────────────────────────────
 eval "$(starship init zsh)"
 
-# ── Banner ────────────────────────────────────────────────────────────────────
-source ~/.config/shell/banner.sh
+# ── Banner (interactive login shells only) ────────────────────────────────────
+[[ -o interactive ]] && source ~/.config/shell/banner.sh
+
+# ── Zoxide (must be last) ─────────────────────────────────────────────────────
+eval "$(zoxide init zsh)"

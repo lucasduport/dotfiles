@@ -1,3 +1,0 @@
-#!bin/sh
-
-sudo yabai --load-sa

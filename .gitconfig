@@ -1,12 +1,69 @@
+# ~/.gitconfig — shared across all machines
+# Machine-specific overrides live in ~/.gitconfig.local (gitignored)
+
+[include]
+	path = ~/.gitconfig.local
+
+# ── Identity (shared) ─────────────────────────────────────────────────────────
+[user]
+	name = Lucas Duport
+	# email and signingkey live in ~/.gitconfig.local
+
+# ── Core ──────────────────────────────────────────────────────────────────────
 [core]
 	excludesfile = ~/.gitconfig_ignore
-[user]
-	email = lucas.duport@epita.fr
-	name = Lucas Duport
-	signingkey = /Users/lucasduport/.ssh/id_rsa.pub
+	pager        = delta
+	editor       = nvim
+	autocrlf     = input
+
 [init]
-	defaultBranch = master
-[gpg]
-	format = ssh
+	defaultBranch = main
+
+# ── Commit signing ────────────────────────────────────────────────────────────
+# gpg.format, gpg.program and user.signingkey live in ~/.gitconfig.local
 [commit]
 	gpgsign = true
+
+# ── Delta (diff pager) ────────────────────────────────────────────────────────
+[delta]
+	navigate     = true
+	side-by-side = true
+	line-numbers = true
+
+[interactive]
+	diffFilter = delta --color-only
+
+# ── Merge & rebase ────────────────────────────────────────────────────────────
+[merge]
+	conflictstyle = diff3
+
+[rebase]
+	autosquash = true
+
+# ── Push & pull ───────────────────────────────────────────────────────────────
+[push]
+	default         = current
+	autoSetupRemote = true
+
+[pull]
+	rebase = true
+
+# ── URL rewrites ──────────────────────────────────────────────────────────────
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+
+# ── Git LFS ───────────────────────────────────────────────────────────────────
+[filter "lfs"]
+	clean    = git-lfs clean -- %f
+	smudge   = git-lfs smudge -- %f
+	process  = git-lfs filter-process
+	required = true
+
+# ── Aliases ───────────────────────────────────────────────────────────────────
+[alias]
+	st   = status --porcelain
+	co   = checkout
+	br   = branch
+	lg   = log --oneline --graph --decorate --all
+	undo = reset --soft HEAD~1
+	wip  = commit -am "wip"

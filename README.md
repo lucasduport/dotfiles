@@ -29,7 +29,8 @@ dotfiles/
 │   │   └── vibe.sh          # Vibe coding setup — gitignored, create manually
 │   ├── starship.toml        # Starship prompt
 │   ├── fastfetch/
-│   │   └── config.jsonc     # Fastfetch layout (drop logo.png here)
+│   │   ├── config.jsonc     # Fastfetch layout
+│   │   └── logo.png         # Terminal banner logo
 │   ├── nvim/                # Neovim config
 │   ├── kitty/               # Kitty terminal
 │   └── nix/                 # Nix config
@@ -100,7 +101,7 @@ Bindings use `cmd-*`. To avoid conflicts with app shortcuts, layout commands (ti
 | `h/j/k/l` | Join with neighbor |
 | `esc` | Reload config + exit |
 
-## Fastfetch logo
+## Fastfetch
 
-Drop a PNG at `~/.config/fastfetch/logo.png` — it renders inline in iTerm2 automatically.
+Logo is tracked in the repo (`logo.png`) and renders inline in iTerm2 automatically.
 For other terminals change `"type"` in `config.jsonc` to `"sixel"`, `"kitty"`, or `"chafa"`.
