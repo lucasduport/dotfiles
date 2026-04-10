@@ -1,5 +1,7 @@
 .DS_Store
-raycast
-secrets.conf
+.git
+.gitignore
+.gitconfig_ignore
+README
 .config/shell/private.sh
 .config/shell/vibe.sh

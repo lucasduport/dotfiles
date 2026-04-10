@@ -1,74 +1,72 @@
-after-login-command = []
-
+after-login-command  = []
 after-startup-command = []
 
-start-at-login = true 
+start-at-login = true
 
-enable-normalization-flatten-containers = true
+enable-normalization-flatten-containers                          = true
 enable-normalization-opposite-orientation-for-nested-containers = true
 
 accordion-padding = 20
 
-default-root-container-layout = 'tiles'
-
+default-root-container-layout      = 'tiles'
 default-root-container-orientation = 'auto'
 
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
-on-focus-changed = "move-mouse window-lazy-center"
+on-focus-changed           = 'move-mouse window-lazy-center'
 
 automatically-unhide-macos-hidden-apps = false
-
-
-#ADDED STUFF
 
 [key-mapping]
 preset = 'qwerty'
 
 [gaps]
-inner.horizontal = 4
-inner.vertical = 4
-outer.bottom = 3
-outer.right = 3
-outer.left= 3
+inner.horizontal = 5
+inner.vertical   = 5
+outer.bottom     = 5
+outer.right      = 5
+outer.left       = 5
+outer.top        = 5
 
+# ── Window rules ──────────────────────────────────────────────────────────────
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'
+run       = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+run       = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Raycast'
+run                         = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Alfred'
+run                         = 'layout floating'
+
+# ── Main mode ─────────────────────────────────────────────────────────────────
 [mode.main.binding]
 
-# All possible keys:
-# - Letters.        a, b, c, ..., z
-# - Numbers.        0, 1, 2, ..., 9
-# - Keypad numbers. keypad0, keypad1, keypad2, ..., keypad9
-# - F-keys.         f1, f2, ..., f20
-# - Special keys.   minus, equal, period, comma, slash, backslash, quote, semicolon, backtick,
-#                   leftSquareBracket, rightSquareBracket, space, enter, esc, backspace, tab
-# - Keypad special. keypadClear, keypadDecimalMark, keypadDivide, keypadEnter, keypadEqual,
-#                   keypadMinus, keypadMultiply, keypadPlus
-# - Arrows.         left, down, up, right
-
-# All possible modifiers: cmd, ctrl, shift
-
+# Close
 cmd-q = 'close --quit-if-last-window'
-cmd-enter = 'exec-and-forget open -na /Applications/iTerm.app'
-cmd-b = 'exec-and-forget open -na /Applications/Zen.app'
 
-cmd-shift-e = 'layout tiles horizontal vertical'
-cmd-shift-s = 'layout accordion horizontal vertical'
-cmd-shift-space = 'layout floating tiling' # 'floating toggle' in i3
+# Focus
+cmd-left  = 'focus left'
+cmd-down  = 'focus down'
+cmd-up    = 'focus up'
+cmd-right = 'focus right'
 
-cmd-shift-f = 'macos-native-fullscreen'
+# Move window
+cmd-shift-left  = 'move left'
+cmd-shift-down  = 'move down'
+cmd-shift-up    = 'move up'
+cmd-shift-right = 'move right'
 
-cmd-h = 'focus left'
-cmd-j = 'focus down'
-cmd-k = 'focus up'
-cmd-l = 'focus right'
+# Layout (quick)
+cmd-shift-space = 'layout floating tiling'
+cmd-shift-f     = 'macos-native-fullscreen'
 
-cmd-shift-h = 'move left'
-cmd-shift-j = 'move down'
-cmd-shift-k = 'move up'
-cmd-shift-l = 'move right'
-
-cmd-shift-minus = 'resize smart -50'
-cmd-shift-equal = 'resize smart +50'
-
+# Workspaces — switch
 cmd-1 = 'workspace 1'
 cmd-2 = 'workspace 2'
 cmd-3 = 'workspace 3'
@@ -80,7 +78,7 @@ cmd-8 = 'workspace 8'
 cmd-9 = 'workspace 9'
 cmd-0 = 'workspace 0'
 
-
+# Workspaces — move window
 cmd-shift-1 = 'move-node-to-workspace 1'
 cmd-shift-2 = 'move-node-to-workspace 2'
 cmd-shift-3 = 'move-node-to-workspace 3'
@@ -92,23 +90,34 @@ cmd-shift-8 = 'move-node-to-workspace 8'
 cmd-shift-9 = 'move-node-to-workspace 9'
 cmd-shift-0 = 'move-node-to-workspace 0'
 
-
+# Navigate
 cmd-tab = 'workspace-back-and-forth'
-cmd-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
+# Service mode
 cmd-shift-semicolon = 'mode service'
 
+# ── Service mode ──────────────────────────────────────────────────────────────
+# Enter with cmd-shift-;  |  Exit with esc or any action key
 [mode.service.binding]
-esc = ['reload-config', 'mode main']
-r = ['flatten-workspace-tree', 'mode main'] # reset layout
-f = ['layout floating tiling', 'mode main'] # Toggle between floating and tiling layout
-backspace = ['close-all-windows-but-current', 'mode main']
+esc   = ['reload-config', 'mode main']
+enter = 'mode main'
 
-cmd-shift-h = ['join-with left', 'mode main']
-cmd-shift-j = ['join-with down', 'mode main']
-cmd-shift-k = ['join-with up', 'mode main']
-cmd-shift-l = ['join-with right', 'mode main']
+# Layout switching
+e = ['layout tiles horizontal vertical',      'mode main']
+s = ['layout accordion horizontal vertical',  'mode main']
+f = ['layout floating tiling',                'mode main']
 
+# Tree
+r         = ['flatten-workspace-tree',           'mode main']
+backspace  = ['close-all-windows-but-current',   'mode main']
+
+# Join containers (vim keys)
+h = ['join-with left',  'mode main']
+j = ['join-with down',  'mode main']
+k = ['join-with up',    'mode main']
+l = ['join-with right', 'mode main']
+
+# ── Workspace → monitor assignment ────────────────────────────────────────────
 [workspace-to-monitor-force-assignment]
 1 = 'main'
 2 = 'main'
