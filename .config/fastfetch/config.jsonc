@@ -7,7 +7,7 @@
 
   "logo": {
     "source": "~/.config/fastfetch/logo.png",
-    "type": "iterm",
+    "type": "kitty",
     "width": 24,
     "height": 12,
     "padding": {

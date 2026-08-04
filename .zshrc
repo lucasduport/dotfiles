@@ -1,7 +1,6 @@
 # ── Oh-My-Zsh ─────────────────────────────────────────────────────────────────
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME=""
-
 plugins=(
   git
   sudo
@@ -12,7 +11,8 @@ plugins=(
   zsh-syntax-highlighting
 )
 
-source "$ZSH/oh-my-zsh.sh"
+# Guarded — install.sh's Shell section is skippable.
+[ -f "$ZSH/oh-my-zsh.sh" ] && source "$ZSH/oh-my-zsh.sh"
 
 # ── Shell modules ─────────────────────────────────────────────────────────────
 source ~/.config/shell/init-apps.sh
@@ -40,5 +40,5 @@ eval "$(starship init zsh)"
 # ── Banner (interactive login shells only) ────────────────────────────────────
 [[ -o interactive ]] && source ~/.config/shell/banner.sh
 
-# ── Zoxide (must be last) ─────────────────────────────────────────────────────
+# ── Zoxide (must be last — it warns if anything initialises after it) ─────────
 eval "$(zoxide init zsh)"

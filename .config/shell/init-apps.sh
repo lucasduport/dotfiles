@@ -14,13 +14,11 @@ fi
 
 # ── PATH ──────────────────────────────────────────────────────────────────────
 # User-local binaries (highest priority — prepend)
-[ -d "$HOME/.local/bin" ]                    && export PATH="$HOME/.local/bin:$PATH"
-[ -d "$HOME/.bun/bin" ]                      && export PATH="$HOME/.bun/bin:$PATH"
-[ -d "$HOME/.antigravity/antigravity/bin" ]  && export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
+[ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"
+[ -d "$HOME/.bun/bin" ]   && export PATH="$HOME/.bun/bin:$PATH"
 
 # Language runtimes (append — lower priority than user tools)
-[ -d /usr/local/go/bin ]                     && export PATH="$PATH:/usr/local/go/bin"
-[ -d "$HOME/.lmstudio/bin" ]                 && export PATH="$PATH:$HOME/.lmstudio/bin"
+[ -d /usr/local/go/bin ]  && export PATH="$PATH:/usr/local/go/bin"
 
 # ── Bun ───────────────────────────────────────────────────────────────────────
 if [ -d "$HOME/.bun" ]; then
@@ -32,35 +30,29 @@ fi
 export EDITOR=nvim
 export LANG=en_US.UTF-8
 
-# ── Postgres (only if installed) ──────────────────────────────────────────────
-if command -v psql > /dev/null 2>&1; then
-  export PGDATA="$HOME/postgres_data"
-  export PGHOST="/tmp"
-  export PGPORT="5432"
-fi
-
 # ── Nix ───────────────────────────────────────────────────────────────────────
 [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ] && \
   . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-
-# ── Google Cloud SDK (only if installed) ──────────────────────────────────────
-if [ -d "$HOME/Downloads/google-cloud-sdk" ]; then
-  [ -f "$HOME/Downloads/google-cloud-sdk/path.zsh.inc" ] && \
-    . "$HOME/Downloads/google-cloud-sdk/path.zsh.inc"
-fi
-
-# ── OCaml / opam ──────────────────────────────────────────────────────────────
-[ -r "$HOME/.opam/opam-init/init.zsh" ] && \
-  source "$HOME/.opam/opam-init/init.zsh" > /dev/null 2>&1
 
 # ── Shell-specific tool initialization ────────────────────────────────────────
 if [ -n "$ZSH_VERSION" ]; then
   command -v direnv > /dev/null 2>&1 && eval "$(direnv hook zsh)"
   command -v fzf    > /dev/null 2>&1 && eval "$(fzf --zsh)"
-  [ -f "$HOME/Downloads/google-cloud-sdk/completion.zsh.inc" ] && \
-    . "$HOME/Downloads/google-cloud-sdk/completion.zsh.inc"
 elif [ -n "$BASH_VERSION" ]; then
   command -v direnv > /dev/null 2>&1 && eval "$(direnv hook bash)"
   command -v fzf    > /dev/null 2>&1 && eval "$(fzf --bash)"
   command -v zoxide > /dev/null 2>&1 && eval "$(zoxide init bash)"
 fi
+
+# ── pnpm ──────────────────────────────────────────────────────────────────────
+export PNPM_HOME="$HOME/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+
+# ── nvm ───────────────────────────────────────────────────────────────────────
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && . "/opt/homebrew/opt/nvm/nvm.sh"
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \
+  . "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"

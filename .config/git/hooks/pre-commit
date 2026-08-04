@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Global gitleaks pre-commit hook. See secure-dev-env skill for context.
+# /opt/homebrew/bin/gitleaks is replaced at install time with an absolute path
+# (PATH-shadowing defense).
+set -euo pipefail
+
+# Per-repo opt-out: `git config hooks.gitleaks false`. Any process that
+# can write .git/config can set this — stderr notice makes the bypass
+# visible to humans (but not to scripted commits).
+# `git config` exits non-zero when unset, so `|| echo true` makes the
+# default enabled.
+if [ "$(git config --bool hooks.gitleaks || echo true)" = "false" ]; then
+  echo "gitleaks: DISABLED for this repo (set via 'git config hooks.gitleaks false')" >&2
+  echo "          If you didn't do this yourself, your repo may be compromised." >&2
+  exit 0
+fi
+
+GITLEAKS="/opt/homebrew/bin/gitleaks"
+if [ ! -x "$GITLEAKS" ]; then
+  echo "gitleaks: pinned binary not found at $GITLEAKS" >&2
+  echo "  Reinstall the hook or disable for this repo:" >&2
+  echo "    git config hooks.gitleaks false" >&2
+  exit 1
+fi
+
+# `--ignore-gitleaks-allow` ignores `gitleaks:allow` inline comments.
+#
+# gitleaks also auto-discovers two in-repo files that a malicious repo
+# can use to whitelist its own secrets:
+#   .gitleaksignore   — fingerprint-based allowlist
+#   .gitleaks.toml    — config with arbitrary `[[allowlists]]` regexes
+# CLI flags exist (-i redirects ignore-file path; --config overrides
+# config) but neither cleanly disables the in-repo file without side
+# effects. We refuse to run when either is present and require explicit
+# per-repo opt-in:
+#   git config hooks.gitleaks-allow-ignore-file true
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "$repo_root" ]; then
+  for in_repo_config in "$repo_root/.gitleaksignore" "$repo_root/.gitleaks.toml"; do
+    if [ -e "$in_repo_config" ]; then
+      allow_ignore="$(git config --bool hooks.gitleaks-allow-ignore-file || echo false)"
+      if [ "$allow_ignore" != "true" ]; then
+        echo "gitleaks: this repo has $(basename "$in_repo_config")." >&2
+        echo "          gitleaks honors it and we cannot reliably override that." >&2
+        echo "          Review the file, then opt in with:" >&2
+        echo "            git config hooks.gitleaks-allow-ignore-file true" >&2
+        echo "          Or disable scanning for this repo:" >&2
+        echo "            git config hooks.gitleaks false" >&2
+        exit 1
+      fi
+    fi
+  done
+fi
+
+"$GITLEAKS" git --pre-commit --redact --staged --verbose --ignore-gitleaks-allow
