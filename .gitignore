@@ -1,9 +1,36 @@
 node_modules/
 .DS_Store
-.config/nvim/
-raycast
-secrets.conf
-.config/nix/secrets.conf
+.gitconfig.local
+
+# ── .config ───────────────────────────────────────────────────────────────────
+# Public repo, and apps write into this stow target — deny all, allowlist the
+# rest. Each dir is re-denied with /* because a bare `!.config/git/` would also
+# expose .config/git/credentials.
+.config/*
+
+!.config/starship.toml
+
+!.config/shell/
+.config/shell/*
+!.config/shell/aliases.sh
+!.config/shell/banner.sh
+!.config/shell/init-apps.sh
+
+!.config/fastfetch/
+.config/fastfetch/*
+!.config/fastfetch/config.jsonc
+!.config/fastfetch/logo.png
+
+!.config/nix/
+.config/nix/*
+!.config/nix/nix.conf
+!.config/nix/.gitignore
+
+!.config/git/
+.config/git/*
+!.config/git/hooks/
+
+# Never tracked, wherever they appear.
 .config/shell/private.sh
 .config/shell/vibe.sh
-.gitconfig.local
+secrets.conf

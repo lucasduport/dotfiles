@@ -9,7 +9,8 @@ if [ -n "$ZSH_VERSION" ]; then
 elif [ -n "$BASH_VERSION" ]; then
   alias resource='source ~/.bashrc'
 fi
-alias restow='stow --restow . --target="$HOME" --dir="$HOME/dotfiles"'
+# --no-folding: otherwise ~/.config becomes one symlink into the repo.
+alias restow='stow --no-folding --restow . --target="$HOME" --dir="$HOME/dotfiles"'
 
 # ── Navigation ────────────────────────────────────────────────────────────────
 alias cd='z'
@@ -75,4 +76,5 @@ if [ "$(uname)" = "Darwin" ]; then
   alias code='open -a "/Applications/Visual Studio Code.app"'
   alias firefox='open -a "/Applications/Firefox.app"'
   alias zen='open -a "/Applications/Zen.app"'
+  alias chrome='open -a "/Applications/Google Chrome.app/"'
 fi

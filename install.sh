@@ -46,11 +46,36 @@ FAILED=()  # tracks packages that failed to install
 
 # Returns 0 (yes) or 1 (no). Skips prompt when --all is set.
 ask() {
-  local label="$1"
+  local label="$1" ans=""
   if $AUTO_YES; then return 0; fi
   printf "\n  ${BOLD}Install %s?${RESET} [Y/n] " "$label"
-  read -r ans
+  # Not stdin: under `curl | bash` that is the script itself.
+  read -r ans < /dev/tty
   [[ -z "$ans" || "$ans" =~ ^[Yy]$ ]]
+}
+
+# Without a terminal every prompt fails and silently skips its section.
+if ! $AUTO_YES && ! { [[ -e /dev/tty ]] && : < /dev/tty; } 2>/dev/null; then
+  log_error "No terminal available for prompts. Re-run with --all for a non-interactive install."
+  exit 1
+fi
+
+# Homebrew 6 refuses casks from untrusted third-party taps.
+brew_tap() {
+  local tap="$1"
+  if brew tap | grep -qx "$tap"; then
+    log_skip "tap $tap" "already tapped"
+  else
+    log_step "Tapping ${tap}…"
+    if brew tap "$tap" --quiet &>/dev/null; then
+      log_ok "tap $tap" "tapped"
+    else
+      log_fail "tap $tap" "brew tap failed"
+      FAILED+=("tap $tap")
+      return
+    fi
+  fi
+  brew trust --tap "$tap" &>/dev/null || true
 }
 
 brew_install() {
@@ -127,18 +152,61 @@ section "02  Dotfiles"   # stow early so configs are in place for later tools
 # ─────────────────────────────────────────────────────────────────────────────
 brew_install "stow" "GNU Stow"
 log_step "Stowing dotfiles from ${DOTFILES_DIR}…"
-stow . --target="$HOME" --dir="$DOTFILES_DIR" --restow
-log_ok "Dotfiles" "linked"
+# Without --no-folding stow makes ~/.config one symlink into this repo, so every
+# app writing there writes into a public working tree. Conflicts must be loud:
+# there is no `set -e`, and macOS ships a ~/.zshrc that stow won't overwrite.
+if stow_out=$(stow --no-folding --restow . --target="$HOME" --dir="$DOTFILES_DIR" 2>&1); then
+  log_ok "Dotfiles" "linked"
+else
+  echo "$stow_out" >&2
+  log_fail "Dotfiles" "stow conflict — move the listed files aside and re-run"
+  FAILED+=("Dotfiles (stow)")
+fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 if ask "Shell & Prompt (starship, fastfetch, zsh plugins)"; then
 section "03  Shell & Prompt"
 # ─────────────────────────────────────────────────────────────────────────────
-brew_install "zsh"                     "Zsh"
-brew_install "starship"                "Starship prompt"
-brew_install "fastfetch"               "Fastfetch"
-brew_install "zsh-autosuggestions"     "zsh-autosuggestions"
-brew_install "zsh-syntax-highlighting" "zsh-syntax-highlighting"
+brew_install "zsh"       "Zsh"
+brew_install "starship"  "Starship prompt"
+brew_install "fastfetch" "Fastfetch"
+
+# KEEP_ZSHRC stops the installer rewriting the .zshrc we just stowed.
+if [[ -d "$HOME/.oh-my-zsh" ]]; then
+  log_skip "oh-my-zsh" "$HOME/.oh-my-zsh"
+else
+  log_step "Installing oh-my-zsh…"
+  if RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c \
+      "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" &>/dev/null; then
+    log_ok "oh-my-zsh" "installed"
+  else
+    log_fail "oh-my-zsh" "install failed — .zshrc will error until this is fixed"
+    FAILED+=("oh-my-zsh")
+  fi
+fi
+
+# .zshrc loads these as oh-my-zsh custom plugins; the brew formulae install
+# elsewhere and go unused.
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+install_zsh_plugin() {
+  local name="$1" url="$2" dest="$ZSH_CUSTOM/plugins/$1"
+  if [[ -d "$dest" ]]; then
+    log_skip "$name" "$dest"
+  else
+    log_step "Installing ${name}…"
+    if git clone --depth=1 "$url" "$dest" --quiet 2>/dev/null; then
+      log_ok "$name" "cloned"
+    else
+      log_fail "$name" "git clone failed"
+      FAILED+=("$name")
+    fi
+  fi
+}
+if [[ -d "$HOME/.oh-my-zsh" ]]; then
+  install_zsh_plugin "zsh-autosuggestions"     "https://github.com/zsh-users/zsh-autosuggestions"
+  install_zsh_plugin "zsh-syntax-highlighting" "https://github.com/zsh-users/zsh-syntax-highlighting"
+  install_zsh_plugin "zsh-256color"            "https://github.com/chrissicool/zsh-256color"
+fi
 
 log_step "Setting Zsh as default shell…"
 ZSH_PATH="$(brew --prefix)/bin/zsh"
@@ -172,6 +240,8 @@ brew_install "tldr"      "tldr"
 brew_install "tmux"      "tmux"
 brew_install "gum"       "gum (Charm scripts)"
 brew_install "hyperfine" "hyperfine (benchmarking)"
+brew_install "vim"       "vim"
+brew_install "watch"     "watch"
 
 log_step "Initialising fzf shell integration…"
 "$(brew --prefix)/opt/fzf/install" --all --no-update-rc 2>/dev/null || true
@@ -179,20 +249,32 @@ log_ok "fzf" "shell integration ready"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-if ask "Git tools (git, lazygit, delta, gh, tig, git-lfs)"; then
-section "05  Git"
+if ask "Git & security (git, lazygit, delta, gh, tig, gitleaks, pre-commit, trivy)"; then
+section "05  Git & Security"
 # ─────────────────────────────────────────────────────────────────────────────
-brew_install "git"       "Git"
-brew_install "git-lfs"   "Git LFS"
-brew_install "lazygit"   "lazygit"
-brew_install "git-delta" "delta (diff pager)"
-brew_install "gh"        "GitHub CLI"
-brew_install "tig"       "tig (git TUI)"
+brew_install "git"        "Git"
+brew_install "git-lfs"    "Git LFS"
+brew_install "lazygit"    "lazygit"
+brew_install "git-delta"  "delta (diff pager)"
+brew_install "gh"         "GitHub CLI"
+brew_install "tig"        "tig (git TUI)"
+brew_install "gitleaks"   "gitleaks (secret scanner)"
+brew_install "pre-commit" "pre-commit"
+brew_install "trivy"      "trivy (vulnerability scanner)"
 
 if command -v git-lfs &>/dev/null; then
   log_step "Initialising Git LFS…"
   git lfs install --quiet
   log_ok "Git LFS" "initialised"
+fi
+
+# core.hooksPath points here; a non-executable hook fails every commit.
+GIT_HOOK="$HOME/.config/git/hooks/pre-commit"
+if [[ -e "$GIT_HOOK" ]]; then
+  chmod +x "$GIT_HOOK" 2>/dev/null || true
+  log_ok "git hooks" "gitleaks pre-commit active"
+else
+  log_error "Expected hook at $GIT_HOOK — is the repo stowed?"
 fi
 fi
 
@@ -268,23 +350,32 @@ brew_install "lazydocker" "lazydocker"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-if ask "Mac apps (Docker, AeroSpace, Raycast, VS Code, TablePlus, Insomnia, Shottr)"; then
+if ask "Mac apps (OrbStack, AeroSpace, Raycast, VS Code, TablePlus, Insomnia…)"; then
 section "11  Mac Applications"
 # ─────────────────────────────────────────────────────────────────────────────
-brew_cask_install "docker"             "Docker Desktop"
-brew_cask_install "aerospace"          "AeroSpace (tiling WM)"
-brew_cask_install "raycast"            "Raycast"
-brew_cask_install "visual-studio-code" "VS Code"
-brew_cask_install "tableplus"          "TablePlus"
-brew_cask_install "insomnia"           "Insomnia"
-brew_cask_install "shottr"             "Shottr (screenshots)"
+brew_tap "nikitabobko/tap"           # aerospace
+brew_tap "theboredteam/boring-notch" # boring-notch
+brew_tap "mediosz/tap"               # swipeaerospace
+
+brew_cask_install "orbstack"                        "OrbStack (Docker runtime)"
+brew_cask_install "nikitabobko/tap/aerospace"       "AeroSpace (tiling WM)"
+brew_cask_install "mediosz/tap/swipeaerospace"      "SwipeAeroSpace"
+brew_cask_install "theboredteam/boring-notch/boring-notch" "boringNotch"
+brew_cask_install "raycast"                         "Raycast"
+brew_cask_install "visual-studio-code"              "VS Code"
+brew_cask_install "tableplus"                       "TablePlus"
+brew_cask_install "insomnia"                        "Insomnia"
+brew_cask_install "hiddenbar"                       "Hidden Bar (menu bar)"
+brew_cask_install "stats"                           "Stats (menu bar monitor)"
+brew_cask_install "monitorcontrol"                  "MonitorControl"
+brew_cask_install "grandperspective"                "GrandPerspective (disk usage)"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 if ask "Nerd Fonts (JetBrainsMono, FiraCode)"; then
 section "12  Fonts"
 # ─────────────────────────────────────────────────────────────────────────────
-brew tap homebrew/cask-fonts 2>/dev/null || true
+# Nerd Fonts live in homebrew/cask since 2024 — homebrew/cask-fonts is gone.
 brew_cask_install "font-jetbrains-mono-nerd-font" "JetBrainsMono Nerd Font"
 brew_cask_install "font-fira-code-nerd-font"      "FiraCode Nerd Font"
 fi
@@ -307,12 +398,14 @@ echo -e "  ${BOLD}Manual steps remaining:${RESET}"
 echo ""
 echo -e "  ${YELLOW}1.${RESET}  Create ${CYAN}~/.gitconfig.local${RESET} — email and signing identity for this machine (see README)"
 echo -e "  ${YELLOW}2.${RESET}  Create ${CYAN}~/.config/shell/private.sh${RESET}  — private aliases, SSH shortcuts"
-echo -e "  ${YELLOW}3.${RESET}  Create ${CYAN}~/.config/shell/vibe.sh${RESET}     — vibe coding / AI env vars"
-echo -e "  ${YELLOW}4.${RESET}  Set up ${CYAN}~/.ssh/id_ed25519${RESET} and add to GitHub"
+echo -e "  ${YELLOW}3.${RESET}  Create ${CYAN}~/.config/shell/vibe.sh${RESET}     — API keys, tooling env vars"
+echo -e "  ${YELLOW}4.${RESET}  Work machines only — recreate the internal registry configs:"
+echo -e "       ${DIM}~/.config/uv/uv.toml, ~/.config/pip/pip.conf, ~/.config/pnpm/rc${RESET}"
+echo -e "  ${YELLOW}5.${RESET}  Set up ${CYAN}~/.ssh/id_ed25519${RESET} and add to GitHub"
 echo -e "       ${DIM}ssh-keygen -t ed25519 -C \"your@email.com\"${RESET}"
 echo -e "       ${DIM}gh ssh-key add ~/.ssh/id_ed25519.pub --title \"$(hostname)\"${RESET}"
-echo -e "  ${YELLOW}5.${RESET}  Sign in: ${CYAN}gh auth login${RESET}"
-echo -e "  ${YELLOW}6.${RESET}  Restart your terminal"
+echo -e "  ${YELLOW}6.${RESET}  Sign in: ${CYAN}gh auth login${RESET}"
+echo -e "  ${YELLOW}7.${RESET}  Restart your terminal"
 echo ""
 echo -e "${BOLD}${GREEN}  All done. Welcome to your new Mac.${RESET}"
 echo ""
