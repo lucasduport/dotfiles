@@ -78,3 +78,5 @@ if [ "$(uname)" = "Darwin" ]; then
   alias zen='open -a "/Applications/Zen.app"'
   alias chrome='open -a "/Applications/Google Chrome.app/"'
 fi
+
+alias v='VIBE_CLI=rust vibe --yolo'

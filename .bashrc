@@ -19,3 +19,5 @@ eval "$(starship init bash)"
 
 # ── Banner ────────────────────────────────────────────────────────────────────
 source ~/.config/shell/banner.sh
+
+. "$HOME/.local/bin/env"

@@ -42,3 +42,5 @@ eval "$(starship init zsh)"
 
 # ── Zoxide (must be last — it warns if anything initialises after it) ─────────
 eval "$(zoxide init zsh)"
+
+. "$HOME/.local/bin/env"

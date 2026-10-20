@@ -9,6 +9,15 @@ set -uo pipefail
 AUTO_YES=false
 [[ "${1:-}" == "--all" || "${1:-}" == "-y" ]] && AUTO_YES=true
 
+# ── Git over HTTPS ─────────────────────────────────────────────────────────────
+# The stowed ~/.gitconfig rewrites https://github.com/* to git@github.com:*
+# (url.insteadOf), and a fresh machine has no GitHub SSH key yet — every git
+# clone in this script (brew taps, oh-my-zsh, plugins, NvChad) would die with
+# "Permission denied (publickey)". Hide the global config from git for the
+# duration of the script so clones use plain HTTPS. Commands that must read or
+# write the real global config opt out (see git lfs install).
+export GIT_CONFIG_GLOBAL=/dev/null
+
 # ── Colors ────────────────────────────────────────────────────────────────────
 RESET="\033[0m"
 BOLD="\033[1m"
@@ -62,17 +71,32 @@ fi
 
 # Homebrew 6 refuses casks from untrusted third-party taps.
 brew_tap() {
-  local tap="$1"
+  local tap="$1" out user repo dest
   if brew tap | grep -qx "$tap"; then
     log_skip "tap $tap" "already tapped"
   else
     log_step "Tapping ${tap}…"
-    if brew tap "$tap" --quiet &>/dev/null; then
+    if out=$(brew tap "$tap" --quiet 2>&1); then
       log_ok "tap $tap" "tapped"
     else
-      log_fail "tap $tap" "brew tap failed"
-      FAILED+=("tap $tap")
-      return
+      # brew's git honours the user's global config (credential helpers), so the
+      # ~/.gitconfig url.insteadOf rewrite (github https → ssh) makes `brew tap`
+      # fail with "Permission denied (publickey)" on a machine with no GitHub
+      # SSH key yet. GIT_CONFIG_GLOBAL only covers plain git, so clone the tap
+      # ourselves — brew registers anything under Library/Taps.
+      echo "$out" >&2
+      user="${tap%%/*}"; repo="${tap#*/}"; repo="${repo#homebrew-}"
+      dest="$(brew --repository)/Library/Taps/${user}/homebrew-${repo}"
+      log_step "Retrying ${tap} with plain git…"
+      [[ -d "$dest" && ! -d "$dest/.git" ]] && rm -rf "$dest"  # partial brew tap attempt
+      if out=$(mkdir -p "${dest%/*}" && git clone --quiet "https://github.com/${user}/homebrew-${repo}" "$dest" 2>&1); then
+        log_ok "tap $tap" "tapped"
+      else
+        echo "$out" >&2
+        log_fail "tap $tap" "brew tap failed"
+        FAILED+=("tap $tap")
+        return
+      fi
     fi
   fi
   brew trust --tap "$tap" &>/dev/null || true
@@ -264,7 +288,8 @@ brew_install "trivy"      "trivy (vulnerability scanner)"
 
 if command -v git-lfs &>/dev/null; then
   log_step "Initialising Git LFS…"
-  git lfs install --quiet
+  # Needs the real global config — GIT_CONFIG_GLOBAL is /dev/null here.
+  env -u GIT_CONFIG_GLOBAL git lfs install
   log_ok "Git LFS" "initialised"
 fi
 
