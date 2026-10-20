@@ -86,7 +86,7 @@ These are gitignored and must be created manually on each machine:
 
 **`~/.config/shell/vibe.sh`** — API keys and tooling env vars
 
-**`~/.gitconfig.local`** — per-machine git identity (email, signing key).
+**`~/.gitconfig.local`** — per-machine git identity (email).
 
 **Work machines only** — internal package registry configuration, deliberately
 kept out of this public repo:

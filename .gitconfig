@@ -7,7 +7,7 @@
 # ── Identity (shared) ─────────────────────────────────────────────────────────
 [user]
 	name = Lucas Duport
-	# email and signingkey live in ~/.gitconfig.local
+	# email lives in ~/.gitconfig.local
 
 # ── Core ──────────────────────────────────────────────────────────────────────
 [core]
@@ -19,11 +19,6 @@
 
 [init]
 	defaultBranch = main
-
-# ── Commit signing ────────────────────────────────────────────────────────────
-# gpg.format, gpg.program and user.signingkey live in ~/.gitconfig.local
-[commit]
-	gpgsign = true
 
 # ── Delta (diff pager) ────────────────────────────────────────────────────────
 [delta]
@@ -74,5 +69,3 @@
 [credential "https://gist.github.com"]
 	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
-[tag]
-	gpgsign = true
