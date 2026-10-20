@@ -375,30 +375,75 @@ brew_install "lazydocker" "lazydocker"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-if ask "Mac apps (OrbStack, AeroSpace, Raycast, VS Code, TablePlus, Insomnia…)"; then
+if ask "Mac apps (iTerm2, OrbStack, AeroSpace, Raycast, VS Code, Vorssaint, TablePlus…)"; then
 section "11  Mac Applications"
 # ─────────────────────────────────────────────────────────────────────────────
 brew_tap "nikitabobko/tap"           # aerospace
-brew_tap "theboredteam/boring-notch" # boring-notch
 brew_tap "mediosz/tap"               # swipeaerospace
 
+brew_cask_install "iterm2"                          "iTerm2"
 brew_cask_install "orbstack"                        "OrbStack (Docker runtime)"
 brew_cask_install "nikitabobko/tap/aerospace"       "AeroSpace (tiling WM)"
 brew_cask_install "mediosz/tap/swipeaerospace"      "SwipeAeroSpace"
-brew_cask_install "theboredteam/boring-notch/boring-notch" "boringNotch"
 brew_cask_install "raycast"                         "Raycast"
 brew_cask_install "visual-studio-code"              "VS Code"
+# Vorssaint covers notch, display brightness, system monitor, app switcher,
+# shelf, keep-awake and uninstaller — replaces boringNotch, MonitorControl, Stats.
+brew_cask_install "vorssaint"                       "Vorssaint (menu bar toolkit)"
 brew_cask_install "tableplus"                       "TablePlus"
-brew_cask_install "insomnia"                        "Insomnia"
-brew_cask_install "hiddenbar"                       "Hidden Bar (menu bar)"
-brew_cask_install "stats"                           "Stats (menu bar monitor)"
-brew_cask_install "monitorcontrol"                  "MonitorControl"
 brew_cask_install "grandperspective"                "GrandPerspective (disk usage)"
+
+# Settings must land before Vorssaint first launches, or onboarding overwrites them.
+if [[ -f "$DOTFILES_DIR/macos/vorssaint-settings.plist" ]]; then
+  log_step "Importing Vorssaint settings…"
+  if bash "$DOTFILES_DIR/macos/vorssaint.sh" load &>/dev/null; then
+    log_ok "Vorssaint" "settings imported"
+  else
+    log_fail "Vorssaint" "settings import failed — run: bash macos/vorssaint.sh load"
+    FAILED+=("Vorssaint settings")
+  fi
+fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+if ask "Work apps (Slack, Notion, Linear, Granola, Chrome, Bitwarden, Tailscale)"; then
+section "12  Work Apps"
+# ─────────────────────────────────────────────────────────────────────────────
+brew_install      "bitwarden-cli"                   "Bitwarden CLI"
+brew_cask_install "slack"                           "Slack"
+brew_cask_install "notion"                          "Notion"
+brew_cask_install "linear-linear"                   "Linear"
+brew_cask_install "granola"                         "Granola"
+brew_cask_install "google-chrome"                   "Google Chrome"
+brew_cask_install "bitwarden"                       "Bitwarden"
+brew_cask_install "tailscale-app"                   "Tailscale"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+if ask "AI coding (Mistral Vibe, Orca)"; then
+section "13  AI Coding"
+# ─────────────────────────────────────────────────────────────────────────────
+brew_tap "stablyai/orca"             # orca
+
+brew_install      "mistral-vibe"                    "Mistral Vibe (CLI agent)"
+brew_cask_install "stablyai/orca/orca"              "Orca (agent orchestration IDE)"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+if ask "macOS system settings (Dock, Finder, trackpad, dark mode)"; then
+section "14  macOS Settings"
+# ─────────────────────────────────────────────────────────────────────────────
+if bash "$DOTFILES_DIR/macos/defaults.sh" &>/dev/null; then
+  log_ok "macOS defaults" "applied — some need a log out"
+else
+  log_fail "macOS defaults" "run: bash macos/defaults.sh"
+  FAILED+=("macOS defaults")
+fi
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 if ask "Nerd Fonts (JetBrainsMono, FiraCode)"; then
-section "12  Fonts"
+section "15  Fonts"
 # ─────────────────────────────────────────────────────────────────────────────
 # Nerd Fonts live in homebrew/cask since 2024 — homebrew/cask-fonts is gone.
 brew_cask_install "font-jetbrains-mono-nerd-font" "JetBrainsMono Nerd Font"

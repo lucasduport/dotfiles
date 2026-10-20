@@ -39,7 +39,23 @@ dotfiles/
 │   │   └── logo.png         # Terminal banner logo
 │   ├── git/hooks/           # Global gitleaks pre-commit hook
 │   └── nix/                 # Nix config
+└── macos/                   # Not stowed — applied by install.sh
+    ├── defaults.sh          # Dock, Finder, trackpad, appearance
+    ├── vorssaint.sh         # save / load Vorssaint settings
+    └── vorssaint-settings.plist
 ```
+
+### Syncing Mac settings
+
+```bash
+bash macos/vorssaint.sh save   # after changing Vorssaint settings, then commit
+bash macos/vorssaint.sh load   # apply on another Mac (quits/relaunches Vorssaint)
+bash macos/defaults.sh         # re-apply macOS system settings
+```
+
+`save` strips machine-specific keys (audio device UIDs, display IDs, window
+sizes) before writing, since this repo is public. The plist is also a valid
+Vorssaint backup, so Settings → Import works too.
 
 Neovim is not tracked here — `install.sh` clones the
 [NvChad starter](https://github.com/NvChad/starter) into `~/.config/nvim`

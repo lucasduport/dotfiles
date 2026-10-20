@@ -4,6 +4,7 @@
 .gitconfig_ignore
 README.md
 install.sh
+macos
 .config/shell/private.sh
 .config/shell/vibe.sh
 .config/nix/secrets.conf
