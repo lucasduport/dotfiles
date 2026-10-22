@@ -430,7 +430,7 @@ brew_cask_install "stablyai/orca/orca"              "Orca (agent orchestration I
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-if ask "macOS system settings (Dock, Finder, trackpad, dark mode)"; then
+if ask "macOS system settings (keyboard, shortcuts, mouse, Dock, Finder, Spaces)"; then
 section "14  macOS Settings"
 # ─────────────────────────────────────────────────────────────────────────────
 if bash "$DOTFILES_DIR/macos/defaults.sh" &>/dev/null; then

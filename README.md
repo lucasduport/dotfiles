@@ -40,7 +40,7 @@ dotfiles/
 │   ├── git/hooks/           # Global gitleaks pre-commit hook
 │   └── nix/                 # Nix config
 └── macos/                   # Not stowed — applied by install.sh
-    ├── defaults.sh          # Dock, Finder, trackpad, appearance
+    ├── defaults.sh          # Keyboard, shortcuts, mouse, Dock, Finder, Spaces
     ├── vorssaint.sh         # save / load Vorssaint settings
     └── vorssaint-settings.plist
 ```

@@ -16,6 +16,8 @@
 		<true/>
 		<key>appUpdatesNotify</key>
 		<true/>
+		<key>appVolumesArePositions</key>
+		<true/>
 		<key>audioPriorityInputEnabled</key>
 		<true/>
 		<key>audioPriorityOutputEnabled</key>
@@ -88,8 +90,6 @@
 		<key>clipboardHistoryShortcut</key>
 		<string>control+option+command:9</string>
 		<key>clipboardHistoryShortcutEnabled</key>
-		<true/>
-		<key>clipboardHistorySkipSensitive</key>
 		<true/>
 		<key>colorPickerBareHex</key>
 		<false/>
@@ -221,6 +221,8 @@
 		<true/>
 		<key>featureAvailable.killProcess</key>
 		<true/>
+		<key>featureAvailable.linearScroll</key>
+		<true/>
 		<key>featureAvailable.mediaTools</key>
 		<true/>
 		<key>featureAvailable.micMute</key>
@@ -267,6 +269,8 @@
 		<true/>
 		<key>featureAvailable.notchLyrics</key>
 		<true/>
+		<key>featureAvailable.notchMascot</key>
+		<true/>
 		<key>featureAvailable.notchNotifications</key>
 		<true/>
 		<key>featureAvailable.notchQueue</key>
@@ -302,6 +306,8 @@
 		<key>featureAvailable.smoothScroll</key>
 		<true/>
 		<key>featureAvailable.soundOutputSwitcher</key>
+		<true/>
+		<key>featureAvailable.spacesOrder</key>
 		<true/>
 		<key>featureAvailable.superKey</key>
 		<true/>
@@ -479,6 +485,8 @@
 		<real>0.0</real>
 		<key>mediaVideoTargetMegabytes</key>
 		<integer>20</integer>
+		<key>menuBarBattery</key>
+		<false/>
 		<key>menuBarBatteryTemperature</key>
 		<false/>
 		<key>menuBarBatteryTime</key>
@@ -498,6 +506,8 @@
 		<key>menuBarDiskUsage</key>
 		<false/>
 		<key>menuBarFanSpeed</key>
+		<false/>
+		<key>menuBarGPU</key>
 		<false/>
 		<key>menuBarGPUTemperature</key>
 		<false/>
@@ -547,6 +557,8 @@
 		<false/>
 		<key>mixerAppArrangement</key>
 		<string></string>
+		<key>mixerHeadphonesDisconnectSilenceAllowed</key>
+		<true/>
 		<key>mixerHeadphonesDisconnectVolumePercent</key>
 		<integer>25</integer>
 		<key>mixerHideInactiveApps</key>
@@ -623,6 +635,8 @@
 		<true/>
 		<key>monitorPwrHealth</key>
 		<true/>
+		<key>monitorPwrPeripherals</key>
+		<false/>
 		<key>monitorPwrSystem</key>
 		<true/>
 		<key>monitorPwrTemperature</key>
@@ -723,10 +737,14 @@
 		<false/>
 		<key>notchCalendarEnabled</key>
 		<true/>
+		<key>notchCalendarTimeLeft</key>
+		<false/>
+		<key>notchCalendarWeekNumbers</key>
+		<false/>
 		<key>notchCameraEnabled</key>
-		<true/>
+		<false/>
 		<key>notchCapture</key>
-		<true/>
+		<false/>
 		<key>notchCaptureControls</key>
 		<true/>
 		<key>notchClipboard</key>
@@ -756,13 +774,15 @@
 		<key>notchHapticFeedback</key>
 		<true/>
 		<key>notchHiddenControls</key>
-		<string>commandBar,microphone,recording,scratchpad,screenshot,keyboardLight</string>
+		<string>commandBar,microphone,panel,recording,scratchpad,screenshot,timer</string>
 		<key>notchHiddenModules</key>
-		<string>agents</string>
+		<string>agents,camera,captures,clipboard,scratchpad,timer</string>
 		<key>notchHideInCaptures</key>
 		<false/>
 		<key>notchHideInFullscreen</key>
 		<false/>
+		<key>notchHideMenuBarGap</key>
+		<true/>
 		<key>notchHideUntilHover</key>
 		<false/>
 		<key>notchHidesMenuBarIcon</key>
@@ -777,6 +797,8 @@
 		<string>none</string>
 		<key>notchIncludeOtherPlayers</key>
 		<false/>
+		<key>notchKeepAwakeActivity</key>
+		<false/>
 		<key>notchKeyboardLight</key>
 		<true/>
 		<key>notchKeyboardLightControlHidden</key>
@@ -789,8 +811,14 @@
 		<true/>
 		<key>notchLyricsOnline</key>
 		<true/>
+		<key>notchMascotEnabled</key>
+		<false/>
+		<key>notchMascotPalette</key>
+		<string>sky</string>
+		<key>notchMascotShape</key>
+		<string>pill</string>
 		<key>notchModuleOrder</key>
-		<string></string>
+		<string>controls,system,mixer,tools,music,clipboard,captures,files,calendar,notifications,timer,camera,downloads,scratchpad,agents,watch</string>
 		<key>notchMusicActivity</key>
 		<false/>
 		<key>notchNotificationsEnabled</key>
@@ -798,7 +826,7 @@
 		<key>notchOpenOnHover</key>
 		<true/>
 		<key>notchOutlineEnabled</key>
-		<false/>
+		<true/>
 		<key>notchPomodoroFocusMinutes</key>
 		<integer>25</integer>
 		<key>notchPomodoroLongBreakInterval</key>
@@ -832,7 +860,7 @@
 		<key>notchSize</key>
 		<string>spacious</string>
 		<key>notchTimerEnabled</key>
-		<true/>
+		<false/>
 		<key>notchTimerMode</key>
 		<string>timer</string>
 		<key>notchTimerSoundEnabled</key>
@@ -964,7 +992,7 @@
 		<key>panelUtilityUninstaller</key>
 		<true/>
 		<key>panelUtilityWindowLayout</key>
-		<true/>
+		<false/>
 		<key>pastePlainEnabled</key>
 		<false/>
 		<key>pastePlainShortcut</key>
@@ -1247,7 +1275,7 @@
 		<key>switcherCurrentSpaceOnly</key>
 		<false/>
 		<key>switcherEnabled</key>
-		<true/>
+		<false/>
 		<key>switcherIconRowMode</key>
 		<false/>
 		<key>switcherInstantSelection</key>
@@ -1322,6 +1350,10 @@
 		<false/>
 		<key>whatsAppOrganizerLayout</key>
 		<string>flat</string>
+		<key>whatsNewKnownFeatures</key>
+		<string>switcher,dockPreview,dockClick,windowMaximizer,windowLayout,autoQuit,spacesOrder,scrollInverter,scrollHorizontal,focusFollowsMouse,smoothScroll,linearScroll,mouseAcceleration,mouseNavigation,mouseButtonShortcuts,middleClick,mouseClickDebounce,keyboardDebounce,textSnippets,superKey,quitWindowProtection,clipboardHistory,pastePlain,finderCutPaste,finderRename,shelf,urlCleaner,diskImageInstaller,mixer,soundOutputSwitcher,audioPriority,micMute,musicBlock,keepAwake,brightness,extraBrightness,bluetoothSleep,quickLauncher,quickToggles,colorPicker,screenOCR,cleaningMode,mediaTools,cleaner,uninstaller,homebrew,appUpdates,screenshot,cameraPreview,radialMenu,scratchpad,commandBar,screenRecorder,wallpaper,killProcess,portManager,notch,notchCalendar,notchNotifications,notchGestures,notchTimer,notchAccessories,notchLyrics,notchQueue,notchLiveEqualizer,notchDownloads,notchAgents,notchWatch,notchMascot,monitorCPU,monitorGPU,monitorMemory,monitorNetwork,monitorDisk,monitorPower,connectedDevices,fanControl</string>
+		<key>whatsNewSeenVersion</key>
+		<string>3.4.2</string>
 		<key>windowDirectionalEnabled</key>
 		<false/>
 		<key>windowDirectionalShortcut</key>
@@ -1438,7 +1470,7 @@
 		<array/>
 	</dict>
 	<key>vorssaintBackupAppVersion</key>
-	<string>3.4.1</string>
+	<string>3.4.2</string>
 	<key>vorssaintBackupVersion</key>
 	<integer>1</integer>
 </dict>
